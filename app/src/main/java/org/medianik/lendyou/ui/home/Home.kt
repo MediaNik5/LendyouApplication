@@ -45,24 +45,24 @@ fun NavGraphBuilder.addHomeGraph(
     onSnackSelected: (Long, NavBackStackEntry) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    composable(HomeSections.FEED.route) { from ->
-        Box(Modifier.fillMaxSize())
-//        Feed(onSnackClick = { id -> onSnackSelected(id, from) }, modifier)
-    }
+//    composable(HomeSections.FEED.route) { from ->
+//        Prototype(featureName = R.string.home_feed)
+////        Feed(onSnackClick = { id -> onSnackSelected(id, from) }, modifier)
+//    }
     composable(HomeSections.DEBTORS.route) { from ->
-        Box(Modifier.fillMaxSize())
+        Prototype(featureName = R.string.home_debtors)
 //        Search(onSnackClick = { id -> onSnackSelected(id, from) }, modifier)
     }
     composable(HomeSections.LENDERS.route) { from ->
-        Box(Modifier.fillMaxSize())
+        Prototype(featureName = R.string.home_lenders)
 //        Cart(onSnackClick = { id -> onSnackSelected(id, from) }, modifier)
     }
     composable(HomeSections.DEBTS.route) { from ->
-        Box(Modifier.fillMaxSize())
+        Prototype(featureName = R.string.home_debts)
 //        Cart(onSnackClick = { id -> onSnackSelected(id, from) }, modifier)
     }
     composable(HomeSections.PROFILE.route) {
-        Box(Modifier.fillMaxSize())
+        Prototype(featureName = R.string.home_profile)
 //        Profile(modifier)
     }
 }
@@ -72,10 +72,10 @@ enum class HomeSections(
     val icon: ImageVector,
     val route: String
 ) {
-    FEED(R.string.home_feed, Icons.Outlined.Home, "home/feed"),
+//    FEED(R.string.home_feed, Icons.Outlined.Home, "home/feed"),
+    DEBTS(R.string.home_debts, Icons.Outlined.Payments, "home/debts"),
     DEBTORS(R.string.home_debtors, Icons.Outlined.CallReceived, "home/debtors"),
     LENDERS(R.string.home_lenders, Icons.Outlined.CallMade, "home/lenders"),
-    DEBTS(R.string.home_debts, Icons.Outlined.Payments, "home/debts"),
     PROFILE(R.string.home_profile, Icons.Outlined.AccountCircle, "home/profile")
 }
 
@@ -144,11 +144,11 @@ private fun DefaultLendyouBottomNavigationItem(
         },
         text = {
             Text(
-                text = stringResource(section.title).uppercase(
+                text = stringResource(section.title)/*.uppercase(
                     ConfigurationCompat.getLocales(
                         LocalConfiguration.current
                     ).get(0)
-                ),
+                )*/,
                 color = tint,
                 style = MaterialTheme.typography.button,
                 maxLines = 1
@@ -166,7 +166,7 @@ private val TextIconSpacing = 2.dp
 private val BottomNavHeight = 56.dp
 private val BottomNavLabelTransformOrigin = TransformOrigin(0f, 0.5f)
 private val BottomNavIndicatorShape = RoundedCornerShape(percent = 50)
-private val BottomNavigationItemPadding = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+private val BottomNavigationItemPadding = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
 
 @Composable
 private fun LendyouBottomNavLayout(

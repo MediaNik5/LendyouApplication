@@ -5,4 +5,6 @@
     <string name="home_lenders">Lenders</string>
     <string name="home_debts">Debts</string>
     <string name="home_profile">Profile</string>
+    <string name="not_implemented">This feature is not yet implemented</string>
+    <string name="come_back_later">Come back later</string>
 </resources>

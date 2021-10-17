@@ -3,7 +3,9 @@
     <string name="app_name">Lendyou Application</string>
     <string name="home_feed">Главная</string>
     <string name="home_debtors">Должники</string>
-    <string name="home_lenders">Кредитор</string>
+    <string name="home_lenders">Кредиторы</string>
     <string name="home_debts">Долги</string>
     <string name="home_profile">Профиль</string>
+    <string name="not_implemented">Данная функция ещё не реализована</string>
+    <string name="come_back_later">Приходите позже!</string>
 </resources>
