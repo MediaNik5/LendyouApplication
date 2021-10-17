@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lendyou Application</string>
+    <string name="home_feed">Главная</string>
+    <string name="home_debtors">Должники</string>
+    <string name="home_lenders">Кредитор</string>
+    <string name="home_debts">Долги</string>
+    <string name="home_profile">Профиль</string>
+</resources>

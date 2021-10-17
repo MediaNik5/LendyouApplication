@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Lendyou Application</string>
+    <string name="home_feed">Home</string>
+    <string name="home_debtors">Debtors</string>
+    <string name="home_lenders">Lenders</string>
+    <string name="home_debts">Debts</string>
+    <string name="home_profile">Profile</string>
+</resources>
