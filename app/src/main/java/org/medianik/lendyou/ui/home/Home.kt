@@ -20,23 +20,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.*
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
-import androidx.core.os.ConfigurationCompat
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.google.accompanist.insets.navigationBarsPadding
+import org.intellij.lang.annotations.MagicConstant
 import org.medianik.lendyou.R
 import org.medianik.lendyou.ui.component.LendyouSurface
 import org.medianik.lendyou.ui.theme.LendyouTheme
@@ -76,7 +72,18 @@ enum class HomeSections(
     DEBTS(R.string.home_debts, Icons.Outlined.Payments, "home/debts"),
     DEBTORS(R.string.home_debtors, Icons.Outlined.CallReceived, "home/debtors"),
     LENDERS(R.string.home_lenders, Icons.Outlined.CallMade, "home/lenders"),
-    PROFILE(R.string.home_profile, Icons.Outlined.AccountCircle, "home/profile")
+    PROFILE(R.string.home_profile, Icons.Outlined.AccountCircle, "home/profile");
+
+    private var titleWidth: Int? = null
+    @Composable
+    fun titleWidth(): Int{
+        if (titleWidth == null){
+            val str = stringResource(title)
+            val buttonFont = MaterialTheme.typography.button
+            titleWidth = (str.length * buttonFont.fontSize.value).toInt()
+        }
+        return titleWidth!!
+    }
 }
 
 @Composable
@@ -180,6 +187,7 @@ private fun LendyouBottomNavLayout(
     val selectionFractions = selectionAnimationForThisFrame(itemCount, selectedIndex, animSpec)
     val indicatorIndex = indicatorAnimationForThisFrame(selectedIndex, animSpec)
 
+    val textWidth = HomeSections.values()[selectedIndex].titleWidth()
     Layout(
         modifier = modifier.height(BottomNavHeight),
         content = {
@@ -191,24 +199,28 @@ private fun LendyouBottomNavLayout(
 
         measureAndPlaceMeasurables(
             constraints,
-            itemCount,
             measurables,
+            itemCount,
             selectionFractions,
-            indicatorIndex
+            indicatorIndex,
+            textWidth
         )
     }
 }
 
 private fun MeasureScope.measureAndPlaceMeasurables(
     constraints: Constraints,
-    itemCount: Int,
     measurables: List<Measurable>,
+    itemCount: Int,
     selectionFractions: List<Animatable<Float, AnimationVector1D>>,
-    indicatorIndex: Animatable<Float, AnimationVector1D>
+    indicatorIndex: Animatable<Float, AnimationVector1D>,
+    indicatorTextWidth: Int
 ): MeasureResult {
-    // Divide the width into n+1 slots and give the selected item 2 slots
-    val unselectedWidth = constraints.maxWidth / (itemCount + 1)
-    val selectedWidth = 2 * unselectedWidth
+    // Selected width calculated experimentally
+    val selectedWidth = constraints.maxWidth / (itemCount + 1) + indicatorTextWidth*2
+    // Unselected width is divided between items that are not selected, their count is itemCount - 1
+    val unselectedWidth = (constraints.maxWidth - selectedWidth) / (itemCount - 1)
+
     val indicatorMeasurable = measurables.first { it.layoutId == "indicator" }
 
     val itemPlaceables = measureItems(
