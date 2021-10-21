@@ -8,4 +8,11 @@
     <string name="home_profile">Профиль</string>
     <string name="not_implemented">Данная функция ещё не реализована</string>
     <string name="come_back_later">Приходите позже!</string>
+    <string name="operation_pending">Операция ещё не завершена</string>
+    <string name="new_debt_pending">Должник ещё не подтвердил новый долг</string>
+    <string name="new_debt_complete">Должник подтвердил долг</string>
+    <string name="new_debt_failure">К сожалению, должник не подтвердил долг</string>
+    <string name="paid_debt_pending">В ожидании подтверждения получения денег от кредитора</string>
+    <string name="paid_debt_complete">Кредитор подтвердил получение денег</string>
+    <string name="paid_debt_failure">Кредитор отказался подтверждать получение денег</string>
 </resources>

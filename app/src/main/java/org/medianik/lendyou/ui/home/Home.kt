@@ -38,23 +38,19 @@ import org.medianik.lendyou.ui.component.LendyouSurface
 import org.medianik.lendyou.ui.theme.LendyouTheme
 
 fun NavGraphBuilder.addHomeGraph(
-    onSnackSelected: (Long, NavBackStackEntry) -> Unit,
+    onDebtSelected: (Long, NavBackStackEntry) -> Unit,
     modifier: Modifier = Modifier
 ) {
-//    composable(HomeSections.FEED.route) { from ->
-//        Prototype(featureName = R.string.home_feed)
-////        Feed(onSnackClick = { id -> onSnackSelected(id, from) }, modifier)
-//    }
+    composable(HomeSections.DEBTS.route) { from ->
+        Prototype(featureName = R.string.home_debts)
+//        Cart(onSnackClick = { id -> onDebtSelected(id, from) }, modifier)
+    }
     composable(HomeSections.DEBTORS.route) { from ->
         Prototype(featureName = R.string.home_debtors)
 //        Search(onSnackClick = { id -> onSnackSelected(id, from) }, modifier)
     }
     composable(HomeSections.LENDERS.route) { from ->
         Prototype(featureName = R.string.home_lenders)
-//        Cart(onSnackClick = { id -> onSnackSelected(id, from) }, modifier)
-    }
-    composable(HomeSections.DEBTS.route) { from ->
-        Prototype(featureName = R.string.home_debts)
 //        Cart(onSnackClick = { id -> onSnackSelected(id, from) }, modifier)
     }
     composable(HomeSections.PROFILE.route) {

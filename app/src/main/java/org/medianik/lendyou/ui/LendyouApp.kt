@@ -48,8 +48,8 @@ fun LendyouApp() {
                     startDestination = MainDestinations.HOME_ROUTE,
                     modifier = Modifier.padding(innerPaddingModifier)
                 ) {
-                    jetsnackNavGraph(
-                        onSnackSelected = appState::navigateToSnackDetail,
+                    lendyouNavGraph(
+                        onDebtSelected = appState::navigateToSnackDetail,
                         upPress = appState::upPress
                     )
                 }
@@ -58,23 +58,23 @@ fun LendyouApp() {
     }
 }
 
-private fun NavGraphBuilder.jetsnackNavGraph(
-    onSnackSelected: (Long, NavBackStackEntry) -> Unit,
+private fun NavGraphBuilder.lendyouNavGraph(
+    onDebtSelected: (Long, NavBackStackEntry) -> Unit,
     upPress: () -> Unit
 ) {
     navigation(
         route = MainDestinations.HOME_ROUTE,
         startDestination = HomeSections.DEBTS.route
     ) {
-        addHomeGraph(onSnackSelected)
+        addHomeGraph(onDebtSelected)
     }
     composable(
         "${MainDestinations.DEBT_DETAIL_ROUTE}/{${MainDestinations.DEBT_ID_KEY}}",
         arguments = listOf(navArgument(MainDestinations.DEBT_ID_KEY) { type = NavType.LongType })
     ) { backStackEntry ->
         val arguments = requireNotNull(backStackEntry.arguments)
-        val snackId = arguments.getLong(MainDestinations.DEBT_ID_KEY)
+        val debtId = arguments.getLong(MainDestinations.DEBT_ID_KEY)
         Box(Modifier.fillMaxSize()) {}
-//        SnackDetail(snackId, upPress)
+//        DebtDetail(debtId, upPress)
     }
 }
