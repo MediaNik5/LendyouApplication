@@ -35,6 +35,7 @@ fun LendyouScaffold(
     contentColor: Color = LendyouTheme.colors.textSecondary,
     content: @Composable (PaddingValues) -> Unit
 ) {
+    scaffoldState.snackbarHostState
     Scaffold(
         modifier = modifier,
         scaffoldState = scaffoldState,

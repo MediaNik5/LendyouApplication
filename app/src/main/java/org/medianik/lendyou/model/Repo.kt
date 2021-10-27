@@ -6,6 +6,7 @@ import org.medianik.lendyou.model.debt.DebtId
 import org.medianik.lendyou.model.debt.DebtInfo
 import org.medianik.lendyou.model.person.Debtor
 import org.medianik.lendyou.model.person.Lender
+import org.medianik.lendyou.model.person.PersonId
 import java.math.BigDecimal
 import java.time.Duration
 
@@ -30,9 +31,11 @@ interface Repo {
     fun getDebtors(): List<Debtor>
     fun getLenders(): List<Lender>
 
+    fun createDebtDefault(): Debt
+
     fun createDebt(debtInfo: DebtInfo, from: Account, to: Account, period: Duration = Duration.ofDays(30)): Debt
 
-    fun payDebt(debt: Debt, sum: BigDecimal = debt.debtInfo().sum): Boolean
+    fun payDebt(debt: Debt, sum: BigDecimal = debt.debtInfo.sum): Boolean
 
     /**
      * If succeeds marks [sum] of money paid on [lender] that is holding debt on this user as [Debtor]
@@ -46,5 +49,7 @@ interface Repo {
 //    fun getPendingOperations(): Collection<Operation<*>>
 //    fun getCompletedOperations(): Collection<Operation<*>>
     fun nextUniqueId(): Long
+    fun getLender(lenderId: PersonId): Lender
+    fun getDebtor(debtorId: PersonId): Debtor
 }
 

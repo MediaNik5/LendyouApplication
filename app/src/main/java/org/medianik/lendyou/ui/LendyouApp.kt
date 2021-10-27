@@ -49,7 +49,7 @@ fun LendyouApp() {
                     modifier = Modifier.padding(innerPaddingModifier)
                 ) {
                     lendyouNavGraph(
-                        onDebtSelected = appState::navigateToSnackDetail,
+                        onDebtSelected = appState::navigateToDebtDetail,
                         upPress = appState::upPress
                     )
                 }
@@ -68,13 +68,13 @@ private fun NavGraphBuilder.lendyouNavGraph(
     ) {
         addHomeGraph(onDebtSelected)
     }
-    composable(
-        "${MainDestinations.DEBT_DETAIL_ROUTE}/{${MainDestinations.DEBT_ID_KEY}}",
-        arguments = listOf(navArgument(MainDestinations.DEBT_ID_KEY) { type = NavType.LongType })
-    ) { backStackEntry ->
-        val arguments = requireNotNull(backStackEntry.arguments)
-        val debtId = arguments.getLong(MainDestinations.DEBT_ID_KEY)
-        Box(Modifier.fillMaxSize()) {}
-//        DebtDetail(debtId, upPress)
-    }
+//    composable(
+//        "${MainDestinations.DEBT_DETAIL_ROUTE}/{${MainDestinations.DEBT_ID_KEY}}",
+//        arguments = listOf(navArgument(MainDestinations.DEBT_ID_KEY) { type = NavType.LongType })
+//    ) { backStackEntry ->
+//        val arguments = requireNotNull(backStackEntry.arguments)
+//        val debtId = arguments.getLong(MainDestinations.DEBT_ID_KEY)
+//        Box(Modifier.fillMaxSize()) {}
+////        DebtDetail(debtId, upPress)
+//    }
 }

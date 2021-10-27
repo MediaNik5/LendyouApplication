@@ -1,11 +1,12 @@
 package org.medianik.lendyou.model.bank;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Banking account
  */
-public final class Account {
+public final class Account implements Serializable {
     private final String cardNumber;
 
     public Account(String cardNumber) {
@@ -31,7 +32,6 @@ public final class Account {
 
     @Override
     public String toString() {
-        return "Account[" +
-                "cardNumber=" + cardNumber + ']';
+        return cardNumber;
     }
 }

@@ -32,7 +32,6 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.google.accompanist.insets.navigationBarsPadding
-import org.intellij.lang.annotations.MagicConstant
 import org.medianik.lendyou.R
 import org.medianik.lendyou.ui.component.LendyouSurface
 import org.medianik.lendyou.ui.theme.LendyouTheme
@@ -43,6 +42,7 @@ fun NavGraphBuilder.addHomeGraph(
 ) {
     composable(HomeSections.DEBTS.route) { from ->
         Prototype(featureName = R.string.home_debts)
+        Debts(onDebtClick = { id -> onDebtSelected(id.value, from) }, modifier)
 //        Cart(onSnackClick = { id -> onDebtSelected(id, from) }, modifier)
     }
     composable(HomeSections.DEBTORS.route) { from ->

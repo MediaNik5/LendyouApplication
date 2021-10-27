@@ -14,4 +14,10 @@
     <string name="paid_debt_pending">Waiting untill lender proves debt has been paid</string>
     <string name="paid_debt_complete">Lender has proven he\'s got money</string>
     <string name="paid_debt_failure">Lender has refused this debt was paid</string>
+    <string name="debt_sum">Sum</string>
+    <string name="debt_left">Left</string>
+    <string name="debtor">Debtor</string>
+    <string name="lender">Lender</string>
+    <string name="payment_item">%sum-payment to %account account</string>
+    <string name="debt_given">Given on %datetime</string>
 </resources>

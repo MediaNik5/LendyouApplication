@@ -2,11 +2,13 @@ package org.medianik.lendyou.model.debt
 
 import org.medianik.lendyou.model.bank.Account
 import org.medianik.lendyou.model.bank.Payment
+import java.io.Serializable
 import java.math.BigDecimal
 import java.time.Duration
+import java.time.LocalDateTime
 
 @JvmInline
-value class DebtId(val id: Long)
+value class DebtId(val value: Long)
 
 class Debt
 /**
@@ -16,24 +18,16 @@ class Debt
  * @param to Account of lender
  * @param period Period between payments
  */(
-    private val id: DebtId,
-    private val debtInfo: DebtInfo,
+    val id: DebtId,
+    val debtInfo: DebtInfo,
     private val from: Account,
     private val to: Account,
     private val period: Duration
-) {
+) : Serializable {
     private val status = false
     private val payments = ArrayList<Payment>()
     fun status(): Boolean {
         return status
-    }
-
-    fun id(): DebtId {
-        return id
-    }
-
-    fun debtInfo(): DebtInfo {
-        return debtInfo
     }
 
     /**
@@ -42,7 +36,16 @@ class Debt
     val left: BigDecimal
         get() {
             var current = debtInfo.sum
-            for (payment in payments) current = current.subtract(payment.sum())
+            for (payment in payments)
+                current = current.subtract(payment.sum())
+            return current
+        }
+
+    val leftDouble: Double
+        get(){
+            var current = debtInfo.sumDouble
+            for(payment in payments)
+                current -= payment.sumDouble()
             return current
         }
 
@@ -51,8 +54,19 @@ class Debt
         return payments.clone() as List<Payment>
     }
 
+    override fun toString(): String {
+        return "Debt(id=$id, debtInfo=$debtInfo, from=$from, to=$to, period=$period, status=$status, payments=$payments)"
+    }
+
+    fun addPayment(sum: BigDecimal, time: LocalDateTime = LocalDateTime.now()) {
+        if(sum > left)
+            throw UnsupportedOperationException("Cannot pay more than you owe.")
+        payments.add(Payment(time, sum, from, to))
+    }
+
     val isLatePayment: Boolean
         get() {
             throw RuntimeException("Not implemented exception")
         }
+
 }

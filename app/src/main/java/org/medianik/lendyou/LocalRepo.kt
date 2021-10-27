@@ -15,11 +15,11 @@ import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 
 class LocalRepo(
-    private val thisLender: Lender,
-    private val thisDebtor: Debtor
+//    private val thisLender: Lender,
+//    private val thisDebtor: Debtor
 ) : Repo {
 
-    private val thisId = thisLender.id
+    private val thisId = PersonId(1)
     private val debts: MutableMap<DebtId, Debt> = ConcurrentHashMap()
     private val debtors: MutableMap<PersonId, Debtor> = ConcurrentHashMap()
     private val lenders: MutableMap<PersonId, Lender> = ConcurrentHashMap()
@@ -27,25 +27,25 @@ class LocalRepo(
         val rinaLender = Lender(
             "+79876543210",
             Passport(0, "Irina", "Nikitina", "Nikitina"),
-            0,
+            PersonId(0),
             "Rina"
         )
         val rinaDebtor = Debtor(
             "+79876543210",
             Passport(0, "Irina", "Nikitina", "Nikitina"),
-            0,
+            PersonId(0),
             "Rina"
         )
         val nikitaLender = Lender(
             "+79876543211",
             Passport(1, "Nikita", "Rostovtsev", "Nikitin"),
-            1,
+            PersonId(1),
             "Nikita"
         )
         val nikitaDebtor = Debtor(
             "+79876543211",
             Passport(1, "Nikita", "Rostovtsev", "Nikitin"),
-            1,
+            PersonId(1),
             "Nikita"
         )
 
@@ -60,18 +60,55 @@ class LocalRepo(
 
         debts[DebtId(0)] = Debt(
             DebtId(0),
-            DebtInfo(BigDecimal(1000), nikitaLender.id, rinaDebtor.id, LocalDateTime.now()),
+            DebtInfo(BigDecimal(400), nikitaLender.id, rinaDebtor.id, LocalDateTime.now()),
             accountRina,
             accountNikita,
             Duration.ofDays(30)
         )
         debts[DebtId(1)] = Debt(
             DebtId(1),
-            DebtInfo(BigDecimal(3000), nikitaLender.id, rinaDebtor.id, LocalDateTime.now().minusDays(20)),
+            DebtInfo(BigDecimal(300), nikitaLender.id, rinaDebtor.id, LocalDateTime.now().minusDays(20)),
             accountRina,
             accountNikita,
             Duration.ofDays(30)
         )
+        debts[DebtId(2)] = Debt(
+            DebtId(2),
+            DebtInfo(BigDecimal(800), nikitaLender.id, rinaDebtor.id, LocalDateTime.now()),
+            accountRina,
+            accountNikita,
+            Duration.ofDays(30)
+        )
+        debts[DebtId(3)] = Debt(
+            DebtId(3),
+            DebtInfo(BigDecimal(400), nikitaLender.id, rinaDebtor.id, LocalDateTime.now().minusDays(20)),
+            accountRina,
+            accountNikita,
+            Duration.ofDays(30)
+        )
+        debts[DebtId(4)] = Debt(
+            DebtId(4),
+            DebtInfo(BigDecimal(300), nikitaLender.id, rinaDebtor.id, LocalDateTime.now().minusDays(20)),
+            accountRina,
+            accountNikita,
+            Duration.ofDays(30)
+        )
+        debts[DebtId(5)] = Debt(
+            DebtId(5),
+            DebtInfo(BigDecimal(200), nikitaLender.id, rinaDebtor.id, LocalDateTime.now().minusDays(20)),
+            accountRina,
+            accountNikita,
+            Duration.ofDays(30)
+        )
+
+        debts[DebtId(2)]?.addPayment(100.toBigDecimal())
+        debts[DebtId(3)]?.addPayment(400.toBigDecimal())
+        debts[DebtId(1)]?.addPayment(200.toBigDecimal())
+        debts[DebtId(4)]?.addPayment(300.toBigDecimal())
+        debts[DebtId(5)]?.addPayment(150.toBigDecimal())
+
+        debts.values.iterator()
+        val sumOfDebts = debts.values.sumOf { it.leftDouble }
     }
 
     override fun getDebt(debtId: DebtId, forceUpdate: Boolean): Debt? {
@@ -83,11 +120,11 @@ class LocalRepo(
     }
 
     override fun getDebts(lender: Lender): List<Debt> {
-        return lenders.values.first {it.id == lender.id}.debts
+        return lenders.values.first {it.id == lender.id}.getDebts()
     }
 
     override fun getDebts(debtor: Debtor): List<Debt> {
-        return debtors.values.first {it.id == debtor.id}.debts
+        return debtors.values.first {it.id == debtor.id}.getDebts()
     }
 
     override fun getDebtors(): List<Debtor> {
@@ -96,6 +133,22 @@ class LocalRepo(
 
     override fun getLenders(): List<Lender> {
         return ArrayList(lenders.values)
+    }
+
+    override fun createDebtDefault(): Debt {
+        val nikita = lenders.values.first()
+        val rina = debtors.values.first()
+        val accountNikita = Account("Nikita")
+        val accountRina = Account("Rina")
+        val id = nextUniqueId()
+        debts[DebtId(id)] = Debt(
+            DebtId(id),
+            DebtInfo(BigDecimal(200), nikita.id, rina.id, LocalDateTime.now().minusDays(20)),
+            accountRina,
+            accountNikita,
+            Duration.ofDays(30)
+        )
+        return debts[DebtId(id)]!!
     }
 
     override fun createDebt(debtInfo: DebtInfo, from: Account, to: Account, period: Duration): Debt {
@@ -117,7 +170,7 @@ class LocalRepo(
             to,
             period
         )
-        debts[newDebt.id()] = newDebt
+        debts[newDebt.id] = newDebt
         return newDebt
     }
 
@@ -128,10 +181,10 @@ class LocalRepo(
     }
 
     override fun payDebt(debt: Debt, sum: BigDecimal): Boolean {
-        if(thisId == debt.debtInfo().debtorId){
+        if(thisId == debt.debtInfo.debtorId){
             return payDebtAsDebtor(debt, sum)
         }
-        if(thisId == debt.debtInfo().lenderId){
+        if(thisId == debt.debtInfo.lenderId){
             return payDebtAsLender(debt, sum)
         }
         throw IllegalArgumentException("Debt must have this user either as debtor or lender to be paid")
@@ -163,7 +216,15 @@ class LocalRepo(
 //    }
 
     override fun nextUniqueId(): Long {
-        TODO("Not yet implemented")
+        return debts.size.toLong()
+    }
+
+    override fun getLender(lenderId: PersonId): Lender {
+        return lenders[lenderId]!!
+    }
+
+    override fun getDebtor(debtorId: PersonId): Debtor {
+        return debtors[debtorId]!!
     }
 
     fun isDebtAdded(id: DebtId): Boolean =

@@ -15,4 +15,10 @@
     <string name="paid_debt_pending">В ожидании подтверждения получения денег от кредитора</string>
     <string name="paid_debt_complete">Кредитор подтвердил получение денег</string>
     <string name="paid_debt_failure">Кредитор отказался подтверждать получение денег</string>
+    <string name="debt_sum">Сумма</string>
+    <string name="debt_left">Осталось</string>
+    <string name="debtor">Должник</string>
+    <string name="lender">Кредитор</string>
+    <string name="payment_item">Платёж %sum на счёт %account</string>
+    <string name="debt_given">Выдан %datetime</string>
 </resources>

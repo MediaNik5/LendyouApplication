@@ -111,7 +111,7 @@ class LendyouAppState(
         }
     }
 
-    fun navigateToSnackDetail(debtId: Long, from: NavBackStackEntry) {
+    fun navigateToDebtDetail(debtId: Long, from: NavBackStackEntry) {
         // In order to discard duplicated navigation events, we check the Lifecycle
         if (from.lifecycleIsResumed()) {
             navController.navigate("${MainDestinations.DEBT_DETAIL_ROUTE}/$debtId")

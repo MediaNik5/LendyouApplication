@@ -1,16 +1,18 @@
 package org.medianik.lendyou.model.bank;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public final class Payment {
+public final class Payment implements Serializable {
     private final LocalDateTime dateTime;
     private final BigDecimal sum;
+    private final double sumDouble;
     private final Account from;
     private final Account to;
 
-    Payment(
+    public Payment(
             LocalDateTime dateTime,
             BigDecimal sum,
             Account from,
@@ -18,8 +20,13 @@ public final class Payment {
     ) {
         this.dateTime = dateTime;
         this.sum = sum;
+        sumDouble = sum.doubleValue();
         this.from = from;
         this.to = to;
+    }
+
+    public double sumDouble() {
+        return sumDouble;
     }
 
     public LocalDateTime dateTime() {

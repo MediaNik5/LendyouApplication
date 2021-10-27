@@ -53,8 +53,8 @@ fun LendyouSurface(
 @Composable
 private fun getBackgroundColorForElevation(color: Color, elevation: Dp): Color {
     return if (elevation > 0.dp // && https://issuetracker.google.com/issues/161429530
-    // JetsnackTheme.colors.isDark //&&
-    // color == JetsnackTheme.colors.uiBackground
+    // LendyouTheme.colors.isDark //&&
+    // color == LendyouTheme.colors.uiBackground
     ) {
         color.withElevation(elevation)
     } else {
@@ -67,6 +67,7 @@ private fun getBackgroundColorForElevation(color: Color, elevation: Dp): Color {
  * Applies a [Color.White] overlay to this color based on the [elevation]. This increases visibility
  * of elevation for surfaces in a dark theme.
  */
+@Composable
 private fun Color.withElevation(elevation: Dp): Color {
     val foreground = calculateForeground(elevation)
     return foreground.compositeOver(this)
@@ -76,7 +77,8 @@ private fun Color.withElevation(elevation: Dp): Color {
  * @return the alpha-modified [Color.White] to overlay on top of the surface color to produce
  * the resultant color.
  */
+@Composable
 private fun calculateForeground(elevation: Dp): Color {
     val alpha = ((4.5f * ln(elevation.value + 1)) + 2f) / 100f
-    return Color.White.copy(alpha = alpha)
+    return LendyouTheme.colors.uiForeground.copy(alpha = alpha)
 }
