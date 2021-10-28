@@ -25,23 +25,23 @@ public final class Payment implements Serializable {
         this.to = to;
     }
 
-    public double sumDouble() {
+    public double getSumDouble() {
         return sumDouble;
     }
 
-    public LocalDateTime dateTime() {
+    public LocalDateTime getDateTime() {
         return dateTime;
     }
 
-    public BigDecimal sum() {
+    public BigDecimal getSum() {
         return sum;
     }
 
-    public Account from() {
+    public Account getFrom() {
         return from;
     }
 
-    public Account to() {
+    public Account getTo() {
         return to;
     }
 

@@ -1,6 +1,6 @@
 package org.medianik.lendyou
 
-import org.medianik.lendyou.model.*
+import org.medianik.lendyou.model.Repo
 import org.medianik.lendyou.model.bank.Account
 import org.medianik.lendyou.model.debt.Debt
 import org.medianik.lendyou.model.debt.DebtId
@@ -14,15 +14,13 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 
-class LocalRepo(
-//    private val thisLender: Lender,
-//    private val thisDebtor: Debtor
-) : Repo {
+class LocalRepo : Repo {
 
     private val thisId = PersonId(1)
     private val debts: MutableMap<DebtId, Debt> = ConcurrentHashMap()
     private val debtors: MutableMap<PersonId, Debtor> = ConcurrentHashMap()
     private val lenders: MutableMap<PersonId, Lender> = ConcurrentHashMap()
+
     init {
         val rinaLender = Lender(
             "+79876543210",
@@ -58,44 +56,45 @@ class LocalRepo(
         val accountRina = Account("Rina")
         val accountNikita = Account("Nikita")
 
+        val today = LocalDateTime.now()
         debts[DebtId(0)] = Debt(
             DebtId(0),
-            DebtInfo(BigDecimal(400), nikitaLender.id, rinaDebtor.id, LocalDateTime.now()),
+            DebtInfo(BigDecimal(400), nikitaLender.id, rinaDebtor.id, today),
             accountRina,
             accountNikita,
             Duration.ofDays(30)
         )
         debts[DebtId(1)] = Debt(
             DebtId(1),
-            DebtInfo(BigDecimal(300), nikitaLender.id, rinaDebtor.id, LocalDateTime.now().minusDays(20)),
+            DebtInfo(BigDecimal(300), nikitaLender.id, rinaDebtor.id, today.minusDays(20)),
             accountRina,
             accountNikita,
             Duration.ofDays(30)
         )
         debts[DebtId(2)] = Debt(
             DebtId(2),
-            DebtInfo(BigDecimal(800), nikitaLender.id, rinaDebtor.id, LocalDateTime.now()),
+            DebtInfo(BigDecimal(800), nikitaLender.id, rinaDebtor.id, today),
             accountRina,
             accountNikita,
             Duration.ofDays(30)
         )
         debts[DebtId(3)] = Debt(
             DebtId(3),
-            DebtInfo(BigDecimal(400), nikitaLender.id, rinaDebtor.id, LocalDateTime.now().minusDays(20)),
+            DebtInfo(BigDecimal(400), nikitaLender.id, rinaDebtor.id, today.minusDays(20)),
             accountRina,
             accountNikita,
             Duration.ofDays(30)
         )
         debts[DebtId(4)] = Debt(
             DebtId(4),
-            DebtInfo(BigDecimal(300), nikitaLender.id, rinaDebtor.id, LocalDateTime.now().minusDays(20)),
+            DebtInfo(BigDecimal(300), nikitaLender.id, rinaDebtor.id, today.minusDays(20)),
             accountRina,
             accountNikita,
             Duration.ofDays(30)
         )
         debts[DebtId(5)] = Debt(
             DebtId(5),
-            DebtInfo(BigDecimal(200), nikitaLender.id, rinaDebtor.id, LocalDateTime.now().minusDays(20)),
+            DebtInfo(BigDecimal(200), nikitaLender.id, rinaDebtor.id, today.minusDays(40)),
             accountRina,
             accountNikita,
             Duration.ofDays(30)
@@ -103,12 +102,12 @@ class LocalRepo(
 
         debts[DebtId(2)]?.addPayment(100.toBigDecimal())
         debts[DebtId(3)]?.addPayment(400.toBigDecimal())
-        debts[DebtId(1)]?.addPayment(200.toBigDecimal())
-        debts[DebtId(4)]?.addPayment(300.toBigDecimal())
-        debts[DebtId(5)]?.addPayment(150.toBigDecimal())
-
-        debts.values.iterator()
-        val sumOfDebts = debts.values.sumOf { it.leftDouble }
+        debts[DebtId(1)]?.addPayment(50.toBigDecimal())
+        debts[DebtId(1)]?.addPayment(150.toBigDecimal())
+        debts[DebtId(1)]?.addPayment(20.toBigDecimal())
+        debts[DebtId(4)]?.addPayment(100.toBigDecimal())
+        debts[DebtId(4)]?.addPayment(70.toBigDecimal())
+        debts[DebtId(4)]?.addPayment(120.toBigDecimal())
     }
 
     override fun getDebt(debtId: DebtId, forceUpdate: Boolean): Debt? {

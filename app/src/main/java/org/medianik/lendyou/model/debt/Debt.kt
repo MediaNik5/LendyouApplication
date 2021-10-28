@@ -16,17 +16,17 @@ class Debt
  * @param debtInfo common debt info
  * @param from Account of debtor
  * @param to Account of lender
- * @param period Period between payments
+ * @param payPeriod Period between payments
  */(
     val id: DebtId,
     val debtInfo: DebtInfo,
     private val from: Account,
     private val to: Account,
-    private val period: Duration
+    val payPeriod: Duration
 ) : Serializable {
-    private val status = false
+    private val status = DebtStatus.NOT_PAID
     private val payments = ArrayList<Payment>()
-    fun status(): Boolean {
+    fun status(): DebtStatus {
         return status
     }
 
@@ -37,7 +37,7 @@ class Debt
         get() {
             var current = debtInfo.sum
             for (payment in payments)
-                current = current.subtract(payment.sum())
+                current = current.subtract(payment.sum)
             return current
         }
 
@@ -45,7 +45,7 @@ class Debt
         get(){
             var current = debtInfo.sumDouble
             for(payment in payments)
-                current -= payment.sumDouble()
+                current -= payment.sumDouble
             return current
         }
 
@@ -55,11 +55,11 @@ class Debt
     }
 
     override fun toString(): String {
-        return "Debt(id=$id, debtInfo=$debtInfo, from=$from, to=$to, period=$period, status=$status, payments=$payments)"
+        return "Debt(id=$id, debtInfo=$debtInfo, from=$from, to=$to, period=$payPeriod, status=$status, payments=$payments)"
     }
 
     fun addPayment(sum: BigDecimal, time: LocalDateTime = LocalDateTime.now()) {
-        if(sum > left)
+        if (sum > left)
             throw UnsupportedOperationException("Cannot pay more than you owe.")
         payments.add(Payment(time, sum, from, to))
     }
@@ -68,5 +68,13 @@ class Debt
         get() {
             throw RuntimeException("Not implemented exception")
         }
-
 }
+
+fun Debt.isNotPaid() =
+    this.status() == DebtStatus.NOT_PAID
+
+fun Debt.lastPayment() =
+    this.getPayments().lastOrNull()
+
+fun Debt.lastPaymentDateOrInitial() =
+    (this.lastPayment()?.dateTime ?: this.debtInfo.dateTime).toLocalDate()

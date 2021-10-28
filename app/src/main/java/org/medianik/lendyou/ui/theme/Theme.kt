@@ -35,7 +35,7 @@ private val LightColorPalette = LendyouColors(
 
 private val DarkColorPalette = LendyouColors(
     brand = Shadow1,
-    brandSecondary = Shadow11,
+    brandSecondary = Shadow5,
     uiBackground = Black,
     uiForeground = Neutral0,
     uiBorder = Neutral3,

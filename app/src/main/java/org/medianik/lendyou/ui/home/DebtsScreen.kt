@@ -1,7 +1,6 @@
 package org.medianik.lendyou.ui.home
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import android.widget.Space
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -26,10 +25,14 @@ import org.medianik.lendyou.model.Repos
 import org.medianik.lendyou.model.bank.Payment
 import org.medianik.lendyou.model.debt.Debt
 import org.medianik.lendyou.model.debt.DebtId
+import org.medianik.lendyou.model.debt.isNotPaid
+import org.medianik.lendyou.model.debt.lastPaymentDateOrInitial
 import org.medianik.lendyou.ui.component.*
 import org.medianik.lendyou.ui.theme.LendyouTheme
 import org.medianik.lendyou.util.DateTimeUtil
 import org.medianik.lendyou.util.DateTimeUtil.dateTimeFormat
+import org.medianik.lendyou.util.DateTimeUtil.isLaterThanToday
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Composable
@@ -83,7 +86,6 @@ fun DebtsList(
     expandedIndex: MutableState<Int>,
     modifier: Modifier = Modifier,
 ) {
-    val sumOfDebts = debts.sumOf { it.leftDouble }
     Column(modifier.verticalScroll(rememberScrollState())){
         for(index in debts.indices){
             val gradient = when(index % 2){
@@ -92,7 +94,6 @@ fun DebtsList(
             }
             key(debts[index].id){
                 DebtItem(
-                    sumOfDebts,
                     debts[index],
                     index,
                     onDebtClick,
@@ -108,7 +109,6 @@ fun DebtsList(
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun DebtItem(
-    sumOfDebts: Double,
     debt: Debt,
     index: Int,
     onDebtClick: (DebtId) -> Unit,
@@ -144,7 +144,7 @@ fun DebtItem(
                         .fillMaxWidth()
                         .height(DebtCardHeight)
                 ) {
-                    DebtCircle(DebtCardHeight, debt, sumOfDebts)
+                    DebtCircle(DebtCardHeight, debt)
                     SumOfDebt(debt)
                     LenderAndDebtor(debt)
                 }
@@ -158,9 +158,11 @@ fun DebtItem(
         },
         expandingContent = { fractionOfExpansion ->
             if(fractionOfExpansion != 0f) {
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(DebtCardPadding)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = DebtCardPadding * 2)
+                ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         val dateTimeText = stringResource(id = R.string.debt_given)
                             .replace("%datetime", dateFormat(debt.debtInfo.dateTime))
@@ -168,9 +170,9 @@ fun DebtItem(
                         Spacer(modifier = Modifier.height(3.dp))
                         LendyouDivider()
                         Spacer(modifier = Modifier.height(3.dp))
-                        Row {
-                            Payments(debt.getPayments())
-                        }
+                        Payments(debt.getPayments())
+                        if (debt.isNotPaid())
+                            AwaitingPayment(debt)
                     }
                 }
             }
@@ -179,11 +181,34 @@ fun DebtItem(
 }
 
 @Composable
+fun AwaitingPayment(debt: Debt) {
+    val lastPaymentDate = debt.lastPaymentDateOrInitial()
+    val nextPaymentDate = lastPaymentDate.toEpochDay() + debt.payPeriod.toDays()
+    if (isLaterThanToday(nextPaymentDate)) {
+        Text(
+            stringResource(R.string.overdue_payment)
+                .replace("%date", LocalDate.ofEpochDay(nextPaymentDate).toString()),
+            color = LendyouTheme.colors.error
+        )
+    } else {
+        Text(
+            stringResource(R.string.next_payment)
+                .replace("%date", LocalDate.ofEpochDay(nextPaymentDate).toString())
+        )
+    }
+}
+
+@Composable
 fun Payments(payments: List<Payment>) {
-    Column {
-        for (payment in payments){
-            PaymentItem(payment)
+    Text(stringResource(R.string.payments), style = MaterialTheme.typography.h6)
+    if (payments.isNotEmpty()) {
+        Column {
+            for (payment in payments) {
+                PaymentItem(payment)
+            }
         }
+    } else {
+        Text(stringResource(R.string.no_payments))
     }
 }
 @Composable
@@ -191,11 +216,11 @@ fun PaymentItem(payment: Payment) {
     Row {
         EndColumn {
             val paymentText = stringResource(id = R.string.payment_item)
-                .replace("%sum", "${payment.sum()}")
-                .replace("%account", "${payment.to()}")
+                .replace("%sum", "${payment.sum}")
+                .replace("%account", "${payment.to}")
             Text(paymentText)
 
-            val dateTime = payment.dateTime().toLocalTime().format(dateTimeFormat)
+            val dateTime = payment.dateTime.toLocalTime().format(dateTimeFormat)
             Text(
                 dateTime,
                 style = MaterialTheme.typography.caption
@@ -226,8 +251,7 @@ fun dateFormat(
 @Composable
 private fun DebtCircle(
     currentCardHeight: Dp,
-    debt: Debt,
-    sumOfDebts: Double
+    debt: Debt
 ) {
     Box(
         modifier = Modifier
@@ -235,7 +259,7 @@ private fun DebtCircle(
             .width(currentCardHeight)
     ) {
         // Proportions of paid to left to pay
-        val proportions = proportionsOfPaidAndUnpaidPartsOfDebt(debt, sumOfDebts)
+        val proportions = proportionsOfPaidAndUnpaidPartsOfDebt(debt)
         AnimatedCircle(
             proportions,
             LendyouTheme.colors.gradient2_1,
@@ -248,10 +272,7 @@ private fun DebtCircle(
     }
 }
 
-private fun proportionsOfPaidAndUnpaidPartsOfDebt(
-    debt: Debt,
-    sumOfDebts: Double
-): List<Float> {
+private fun proportionsOfPaidAndUnpaidPartsOfDebt(debt: Debt): List<Float> {
     val leftSum = debt.leftDouble
     return listOf(
         ((debt.debtInfo.sumDouble - leftSum) / debt.debtInfo.sumDouble).toFloat(),
@@ -346,7 +367,6 @@ fun DebtItemPreview(){
             index = 0,
             onDebtClick = { },
             gradient = LendyouTheme.colors.gradient6_1,
-            sumOfDebts = 0.toDouble(),
             onDebtsChange = {  },
             expandedIndex = remember { mutableStateOf(-1)}
         )

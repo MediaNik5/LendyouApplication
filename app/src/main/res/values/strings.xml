@@ -8,10 +8,10 @@
     <string name="not_implemented">This feature is not yet implemented</string>
     <string name="come_back_later">Come back later</string>
     <string name="operation_pending">It\'s pending operation</string>
-    <string name="new_debt_pending">New debt hasnt yet been proven by debter</string>
+    <string name="new_debt_pending">New debt hasn\'t yet been proven by debter</string>
     <string name="new_debt_complete">This debt has been proven by debtor</string>
     <string name="new_debt_failure">Unfortunately debtor hasn\'t proved that this debt corresponds to him</string>
-    <string name="paid_debt_pending">Waiting untill lender proves debt has been paid</string>
+    <string name="paid_debt_pending">Waiting until lender proves debt has been paid</string>
     <string name="paid_debt_complete">Lender has proven he\'s got money</string>
     <string name="paid_debt_failure">Lender has refused this debt was paid</string>
     <string name="debt_sum">Sum</string>
@@ -20,4 +20,8 @@
     <string name="lender">Lender</string>
     <string name="payment_item">%sum-payment to %account account</string>
     <string name="debt_given">Given on %datetime</string>
+    <string name="no_payments">There are no payments yet</string>
+    <string name="payments">Payments</string>
+    <string name="overdue_payment">Payment is overdue! Expected on %date</string>
+    <string name="next_payment">Next payment is expected on %date</string>
 </resources>

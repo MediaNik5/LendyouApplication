@@ -21,4 +21,8 @@
     <string name="lender">Кредитор</string>
     <string name="payment_item">Платёж %sum на счёт %account</string>
     <string name="debt_given">Выдан %datetime</string>
+    <string name="no_payments">Ещё не поступило ни одного платежа</string>
+    <string name="payments">Платежи</string>
+    <string name="overdue_payment">Платёж просрочен, ожидался %date</string>
+    <string name="next_payment">Следующий платёж ожидается %date</string>
 </resources>
