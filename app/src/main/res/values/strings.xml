@@ -24,4 +24,5 @@
     <string name="payments">Payments</string>
     <string name="overdue_payment">Payment is overdue! Expected on %date</string>
     <string name="next_payment">Next payment is expected on %date</string>
+    <string name="new_debt">Add new debt</string>
 </resources>

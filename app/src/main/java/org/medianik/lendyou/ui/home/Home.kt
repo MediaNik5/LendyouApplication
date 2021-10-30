@@ -12,7 +12,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.CallMade
+import androidx.compose.material.icons.outlined.CallReceived
+import androidx.compose.material.icons.outlined.Payments
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,7 +23,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.res.stringResource
@@ -38,12 +44,16 @@ import org.medianik.lendyou.ui.theme.LendyouTheme
 
 fun NavGraphBuilder.addHomeGraph(
     onDebtSelected: (Long, NavBackStackEntry) -> Unit,
+    onNewDebtRequested: (NavBackStackEntry) -> Unit,
     modifier: Modifier = Modifier
 ) {
     composable(HomeSections.DEBTS.route) { from ->
-        Prototype(featureName = R.string.home_debts)
-        Debts(onDebtClick = { id -> onDebtSelected(id.value, from) }, modifier)
-//        Cart(onSnackClick = { id -> onDebtSelected(id, from) }, modifier)
+//        Prototype(featureName = R.string.home_debts)
+        Debts(
+            onDebtClick = { id -> onDebtSelected(id.value, from) },
+            onNewDebtRequested = { onNewDebtRequested(from) },
+            modifier
+        )
     }
     composable(HomeSections.DEBTORS.route) { from ->
         Prototype(featureName = R.string.home_debtors)

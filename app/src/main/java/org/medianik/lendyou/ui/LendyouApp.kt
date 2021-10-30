@@ -1,14 +1,13 @@
 package org.medianik.lendyou.ui
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.*
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import androidx.navigation.navigation
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.insets.systemBarsPadding
 import org.medianik.lendyou.ui.component.LendyouScaffold
@@ -16,6 +15,7 @@ import org.medianik.lendyou.ui.component.LendyouSnackbar
 import org.medianik.lendyou.ui.home.HomeSections
 import org.medianik.lendyou.ui.home.LendyouBottomBar
 import org.medianik.lendyou.ui.home.addHomeGraph
+import org.medianik.lendyou.ui.home.addNewDebtGraph
 import org.medianik.lendyou.ui.theme.LendyouTheme
 
 
@@ -50,6 +50,7 @@ fun LendyouApp() {
                 ) {
                     lendyouNavGraph(
                         onDebtSelected = appState::navigateToDebtDetail,
+                        onNewDebtRequested = appState::navigateToNewDebt,
                         upPress = appState::upPress
                     )
                 }
@@ -60,14 +61,16 @@ fun LendyouApp() {
 
 private fun NavGraphBuilder.lendyouNavGraph(
     onDebtSelected: (Long, NavBackStackEntry) -> Unit,
+    onNewDebtRequested: (NavBackStackEntry) -> Unit,
     upPress: () -> Unit
 ) {
     navigation(
         route = MainDestinations.HOME_ROUTE,
         startDestination = HomeSections.DEBTS.route
     ) {
-        addHomeGraph(onDebtSelected)
+        addHomeGraph(onDebtSelected, onNewDebtRequested)
     }
+    addNewDebtGraph()
 //    composable(
 //        "${MainDestinations.DEBT_DETAIL_ROUTE}/{${MainDestinations.DEBT_ID_KEY}}",
 //        arguments = listOf(navArgument(MainDestinations.DEBT_ID_KEY) { type = NavType.LongType })

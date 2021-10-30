@@ -25,9 +25,10 @@ fun Prototype(modifier: Modifier = Modifier, @StringRes featureName: Int){
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
             modifier = modifier
-                .fillMaxSize()
-                .wrapContentSize()
+                .height(600.dp)
+                .fillMaxWidth()
                 .padding(24.dp)
         ) {
             Image(

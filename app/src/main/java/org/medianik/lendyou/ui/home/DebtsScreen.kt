@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -38,20 +41,33 @@ import java.time.LocalDateTime
 @Composable
 fun Debts(
     onDebtClick: (DebtId) -> Unit,
+    onNewDebtRequested: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var changes by rememberSaveable{ mutableStateOf(0) }
+    var changes by rememberSaveable { mutableStateOf(0) }
 
-
-    val debts = rememberSaveable(changes){
+    val debts = rememberSaveable(changes) {
         Repos.getInstance().currentRepo.getDebts()
     }
 
-    Debts(
-        debts,
-        onDebtClick,
-        modifier,
-    ) { changes++ }
+    Box {
+        Debts(
+            debts,
+            onDebtClick,
+            modifier,
+        ) { changes++ }
+        LendyouFloatingActionButton(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(10.dp),
+            onClick = onNewDebtRequested
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Add,
+                contentDescription = ""
+            )
+        }
+    }
 
 }
 

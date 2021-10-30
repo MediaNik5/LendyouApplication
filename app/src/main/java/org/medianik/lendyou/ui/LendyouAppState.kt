@@ -26,6 +26,7 @@ object MainDestinations {
     const val HOME_ROUTE = "home"
     const val DEBT_DETAIL_ROUTE = "debt"
     const val DEBT_ID_KEY = "debtId"
+    const val NEW_DEBT_ROUT = "new_debt"
 }
 
 /**
@@ -115,6 +116,12 @@ class LendyouAppState(
         // In order to discard duplicated navigation events, we check the Lifecycle
         if (from.lifecycleIsResumed()) {
             navController.navigate("${MainDestinations.DEBT_DETAIL_ROUTE}/$debtId")
+        }
+    }
+
+    fun navigateToNewDebt(from: NavBackStackEntry) {
+        if (from.lifecycleIsResumed()) {
+            navController.navigate(MainDestinations.NEW_DEBT_ROUT)
         }
     }
 }
