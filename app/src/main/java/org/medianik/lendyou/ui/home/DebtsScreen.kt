@@ -23,6 +23,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import org.medianik.lendyou.R
 import org.medianik.lendyou.model.Repos
 import org.medianik.lendyou.model.bank.Payment
@@ -30,6 +33,7 @@ import org.medianik.lendyou.model.debt.Debt
 import org.medianik.lendyou.model.debt.DebtId
 import org.medianik.lendyou.model.debt.isNotPaid
 import org.medianik.lendyou.model.debt.lastPaymentDateOrInitial
+import org.medianik.lendyou.ui.MainDestinations
 import org.medianik.lendyou.ui.component.*
 import org.medianik.lendyou.ui.theme.LendyouTheme
 import org.medianik.lendyou.util.DateTimeUtil
@@ -38,6 +42,18 @@ import org.medianik.lendyou.util.DateTimeUtil.isLaterThanToday
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+fun NavGraphBuilder.adddDebtScreenGraph(
+    onNewDebtRequested: (NavBackStackEntry) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    composable(MainDestinations.NEW_DEBT_ROUT) { from ->
+        NewDebtScreen { onNewDebtRequested(from) }
+    }
+    composable(MainDestinations.PENDING_DEBTS_ROUT) { from ->
+        Prototype(featureName = R.string.pending_debts, modifier = modifier)
+    }
+}
+
 @Composable
 fun Debts(
     onDebtClick: (DebtId) -> Unit,
@@ -45,17 +61,20 @@ fun Debts(
     modifier: Modifier = Modifier
 ) {
     var changes by rememberSaveable { mutableStateOf(0) }
+    val onChange: () -> Unit = { changes++ }
 
     val debts = rememberSaveable(changes) {
         Repos.getInstance().currentRepo.getDebts()
     }
+    Repos.getInstance().currentRepo.subscribeToChanges(onChange)
 
     Box {
         Debts(
             debts,
             onDebtClick,
             modifier,
-        ) { changes++ }
+            onChange,
+        )
         LendyouFloatingActionButton(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -68,7 +87,6 @@ fun Debts(
             )
         }
     }
-
 }
 
 @Composable

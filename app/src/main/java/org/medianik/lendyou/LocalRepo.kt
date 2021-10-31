@@ -12,7 +12,9 @@ import org.medianik.lendyou.model.person.PersonId
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDateTime
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedDeque
 
 class LocalRepo : Repo {
 
@@ -20,6 +22,7 @@ class LocalRepo : Repo {
     private val debts: MutableMap<DebtId, Debt> = ConcurrentHashMap()
     private val debtors: MutableMap<PersonId, Debtor> = ConcurrentHashMap()
     private val lenders: MutableMap<PersonId, Lender> = ConcurrentHashMap()
+    private val subcribers: Deque<() -> Unit> = ConcurrentLinkedDeque()
 
     init {
         val rinaLender = Lender(
@@ -147,15 +150,16 @@ class LocalRepo : Repo {
             accountNikita,
             Duration.ofDays(30)
         )
+        subcribers.update()
         return debts[DebtId(id)]!!
     }
 
     override fun createDebt(debtInfo: DebtInfo, from: Account, to: Account, period: Duration): Debt {
         if(thisId == debtInfo.lenderId){
-            return createDebtAsLender(debtInfo, from, to, period)
+            return createDebtAsLender(debtInfo, from, to, period).also { subcribers.update() }
         }
         if(thisId == debtInfo.debtorId){
-            return createDebtAsDebtor(debtInfo, from, to, period)
+            return createDebtAsDebtor(debtInfo, from, to, period).also { subcribers.update() }
         }
         throw IllegalArgumentException("Newly created debt must have this user either as debtor or lender")
     }
@@ -181,10 +185,10 @@ class LocalRepo : Repo {
 
     override fun payDebt(debt: Debt, sum: BigDecimal): Boolean {
         if(thisId == debt.debtInfo.debtorId){
-            return payDebtAsDebtor(debt, sum)
+            return payDebtAsDebtor(debt, sum).also { subcribers.update() }
         }
         if(thisId == debt.debtInfo.lenderId){
-            return payDebtAsLender(debt, sum)
+            return payDebtAsLender(debt, sum).also { subcribers.update() }
         }
         throw IllegalArgumentException("Debt must have this user either as debtor or lender to be paid")
     }
@@ -226,8 +230,17 @@ class LocalRepo : Repo {
         return debtors[debtorId]!!
     }
 
-    fun isDebtAdded(id: DebtId): Boolean =
+    override fun subscribeToChanges(function: () -> Unit) {
+        subcribers.add(function)
+    }
+
+    private fun isDebtAdded(id: DebtId): Boolean =
         debts.contains(id)
+
+    private fun Deque<() -> Unit>.update() {
+        for (func in this)
+            func()
+    }
 
 //    inner class NewDebtOperation(
 //        debt: Debt,

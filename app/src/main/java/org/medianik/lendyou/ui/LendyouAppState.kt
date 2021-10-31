@@ -27,6 +27,7 @@ object MainDestinations {
     const val DEBT_DETAIL_ROUTE = "debt"
     const val DEBT_ID_KEY = "debtId"
     const val NEW_DEBT_ROUT = "new_debt"
+    const val PENDING_DEBTS_ROUT = "pending_debts"
 }
 
 /**
@@ -122,6 +123,12 @@ class LendyouAppState(
     fun navigateToNewDebt(from: NavBackStackEntry) {
         if (from.lifecycleIsResumed()) {
             navController.navigate(MainDestinations.NEW_DEBT_ROUT)
+        }
+    }
+
+    fun navigateToPendingDebts(from: NavBackStackEntry) {
+        if (from.lifecycleIsResumed()) {
+            navController.navigate(MainDestinations.PENDING_DEBTS_ROUT)
         }
     }
 }

@@ -51,5 +51,6 @@ interface Repo {
     fun nextUniqueId(): Long
     fun getLender(lenderId: PersonId): Lender
     fun getDebtor(debtorId: PersonId): Debtor
+    fun subscribeToChanges(function: () -> Unit)
 }
 

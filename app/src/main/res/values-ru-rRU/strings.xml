@@ -26,4 +26,5 @@
     <string name="overdue_payment">Платёж просрочен, ожидался %date</string>
     <string name="next_payment">Следующий платёж ожидается %date</string>
     <string name="new_debt">Добавить новый долг</string>
+    <string name="pending_debts">Долги в рассмотрении</string>
 </resources>

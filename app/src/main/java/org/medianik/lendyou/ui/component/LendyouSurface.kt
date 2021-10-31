@@ -51,11 +51,8 @@ fun LendyouSurface(
 }
 
 @Composable
-private fun getBackgroundColorForElevation(color: Color, elevation: Dp): Color {
-    return if (elevation > 0.dp // && https://issuetracker.google.com/issues/161429530
-    // LendyouTheme.colors.isDark //&&
-    // color == LendyouTheme.colors.uiBackground
-    ) {
+fun getBackgroundColorForElevation(color: Color, elevation: Dp): Color {
+    return if (elevation > 0.dp) {
         color.withElevation(elevation)
     } else {
         color

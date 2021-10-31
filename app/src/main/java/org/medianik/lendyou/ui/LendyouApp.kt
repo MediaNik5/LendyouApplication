@@ -15,7 +15,7 @@ import org.medianik.lendyou.ui.component.LendyouSnackbar
 import org.medianik.lendyou.ui.home.HomeSections
 import org.medianik.lendyou.ui.home.LendyouBottomBar
 import org.medianik.lendyou.ui.home.addHomeGraph
-import org.medianik.lendyou.ui.home.addNewDebtGraph
+import org.medianik.lendyou.ui.home.adddDebtScreenGraph
 import org.medianik.lendyou.ui.theme.LendyouTheme
 
 
@@ -51,6 +51,7 @@ fun LendyouApp() {
                     lendyouNavGraph(
                         onDebtSelected = appState::navigateToDebtDetail,
                         onNewDebtRequested = appState::navigateToNewDebt,
+                        onPendingDebtsRequested = appState::navigateToPendingDebts,
                         upPress = appState::upPress
                     )
                 }
@@ -62,6 +63,7 @@ fun LendyouApp() {
 private fun NavGraphBuilder.lendyouNavGraph(
     onDebtSelected: (Long, NavBackStackEntry) -> Unit,
     onNewDebtRequested: (NavBackStackEntry) -> Unit,
+    onPendingDebtsRequested: (NavBackStackEntry) -> Unit,
     upPress: () -> Unit
 ) {
     navigation(
@@ -70,7 +72,7 @@ private fun NavGraphBuilder.lendyouNavGraph(
     ) {
         addHomeGraph(onDebtSelected, onNewDebtRequested)
     }
-    addNewDebtGraph()
+    adddDebtScreenGraph(onPendingDebtsRequested)
 //    composable(
 //        "${MainDestinations.DEBT_DETAIL_ROUTE}/{${MainDestinations.DEBT_ID_KEY}}",
 //        arguments = listOf(navArgument(MainDestinations.DEBT_ID_KEY) { type = NavType.LongType })
