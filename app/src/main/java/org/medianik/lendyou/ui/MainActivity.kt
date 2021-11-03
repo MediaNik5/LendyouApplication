@@ -1,6 +1,5 @@
 package org.medianik.lendyou.ui
 
-//import org.medianik.lendyou.ui.auth.AuthUser
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -9,6 +8,7 @@ import androidx.activity.compose.setContent
 import com.google.firebase.messaging.FirebaseMessaging
 import io.vertx.core.Vertx
 import org.medianik.lendyou.R
+import org.medianik.lendyou.ui.auth.AuthUser
 import org.medianik.lendyou.ui.auth.ClientVertx
 
 class MainActivity : ComponentActivity() {
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
         firebaseToken()
         setContent {
             if (false) {
-//                AuthUser()
+                AuthUser()
             } else {
                 LendyouApp()
             }

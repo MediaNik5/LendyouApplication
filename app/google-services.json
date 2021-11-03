@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "138880592265",
+    "project_id": "lendyou-1635091667347",
+    "storage_bucket": "lendyou-1635091667347.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:138880592265:android:ea5800acb75d9c35089958",
+        "android_client_info": {
+          "package_name": "org.medianik.lendyou"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "138880592265-bet8922iqp9o3se04iilne3s5tgk6see.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwyKDiYi75P4rA31GjX_YkPtHoWYfl2jo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "138880592265-bet8922iqp9o3se04iilne3s5tgk6see.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
