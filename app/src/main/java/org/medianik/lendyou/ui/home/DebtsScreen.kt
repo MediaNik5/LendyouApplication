@@ -17,7 +17,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,6 +34,7 @@ import org.medianik.lendyou.model.debt.isNotPaid
 import org.medianik.lendyou.model.debt.lastPaymentDateOrInitial
 import org.medianik.lendyou.ui.MainDestinations
 import org.medianik.lendyou.ui.component.*
+import org.medianik.lendyou.ui.debts.NewDebtScreen
 import org.medianik.lendyou.ui.theme.LendyouTheme
 import org.medianik.lendyou.util.DateTimeUtil
 import org.medianik.lendyou.util.DateTimeUtil.dateTimeFormat
@@ -122,16 +122,11 @@ fun DebtsList(
 ) {
     Column(modifier.verticalScroll(rememberScrollState())){
         for(index in debts.indices){
-            val gradient = when(index % 2){
-                0 -> LendyouTheme.colors.gradient6_1
-                else -> LendyouTheme.colors.gradient6_2
-            }
             key(debts[index].id){
                 DebtItem(
                     debts[index],
                     index,
                     onDebtClick,
-                    gradient,
                     onDebtsChange,
                     expandedIndex,
                 )
@@ -146,7 +141,6 @@ fun DebtItem(
     debt: Debt,
     index: Int,
     onDebtClick: (DebtId) -> Unit,
-    gradient: List<Color>,
     onDebtsChange: () -> Unit,
     expandedIndex: MutableState<Int>,
     modifier: Modifier = Modifier,
@@ -171,47 +165,57 @@ fun DebtItem(
         initialHeight = DebtCardHeight.value,
         targetHeight = currentCardHeight.value,
         contentColor = LendyouTheme.colors.textSecondary,
-        header = { fractionOfExpansion ->
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter){
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(DebtCardHeight)
-                ) {
-                    DebtCircle(DebtCardHeight, debt)
-                    SumOfDebt(debt)
-                    LenderAndDebtor(debt)
-                }
+        header = { fractionOfExpansion -> DebtHeader(debt, isExpanded()) },
+        expandingContent = { fractionOfExpansion -> ExpandedDebtInfo(fractionOfExpansion, debt) }
+    )
+}
 
-                if(!isExpanded())
-                    LendyouDivider(
-                        Modifier
-                            .align(Alignment.Center)
-                            .fillMaxWidth())
-            }
-        },
-        expandingContent = { fractionOfExpansion ->
-            if(fractionOfExpansion != 0f) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = DebtCardPadding * 2)
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        val dateTimeText = stringResource(id = R.string.debt_given)
-                            .replace("%datetime", dateFormat(debt.debtInfo.dateTime))
-                        Text(dateTimeText, modifier = Modifier.align(Alignment.End))
-                        Spacer(modifier = Modifier.height(3.dp))
-                        LendyouDivider()
-                        Spacer(modifier = Modifier.height(3.dp))
-                        Payments(debt.getPayments())
-                        if (debt.isNotPaid())
-                            AwaitingPayment(debt)
-                    }
-                }
+@Composable
+private fun DebtHeader(debt: Debt, isExpanded: Boolean) {
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(DebtCardHeight)
+        ) {
+            DebtCircle(DebtCardHeight, debt)
+            SumOfDebt(debt)
+            LenderAndDebtor(debt)
+        }
+
+        if (!isExpanded)
+            LendyouDivider(
+                Modifier
+                    .align(Alignment.Center)
+                    .fillMaxWidth()
+            )
+    }
+}
+
+@Composable
+private fun ExpandedDebtInfo(
+    fractionOfExpansion: Float,
+    debt: Debt
+) {
+    if (fractionOfExpansion != 0f) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = DebtCardPadding * 2)
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                val dateTimeText = stringResource(id = R.string.debt_given)
+                    .replace("%datetime", dateFormat(debt.debtInfo.dateTime))
+                Text(dateTimeText, modifier = Modifier.align(Alignment.End))
+                Spacer(modifier = Modifier.height(3.dp))
+                LendyouDivider()
+                Spacer(modifier = Modifier.height(3.dp))
+                Payments(debt.getPayments())
+                if (debt.isNotPaid())
+                    AwaitingPayment(debt)
             }
         }
-    )
+    }
 }
 
 @Composable
@@ -400,7 +404,6 @@ fun DebtItemPreview(){
             debt = Repos.getInstance().currentRepo.getDebts().first(),
             index = 0,
             onDebtClick = { },
-            gradient = LendyouTheme.colors.gradient6_1,
             onDebtsChange = {  },
             expandedIndex = remember { mutableStateOf(-1)}
         )

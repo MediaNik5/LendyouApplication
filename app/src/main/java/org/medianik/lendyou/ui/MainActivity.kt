@@ -1,49 +1,45 @@
 package org.medianik.lendyou.ui
 
-import android.content.Intent
+//import org.medianik.lendyou.ui.auth.AuthUser
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.google.firebase.messaging.FirebaseMessaging
+import io.vertx.core.Vertx
+import org.medianik.lendyou.R
+import org.medianik.lendyou.ui.auth.ClientVertx
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Intent(this, this.javaClass)
-//        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
-//        val client = GoogleSignIn.getClient(this, gso)
-//        client.signOut().addOnCompleteListener{ task ->
-//            if(task.isSuccessful)
-//                Log.i("Lendyou", "Signed out of google")
-//            else
-//                Log.i("Lendyou", "Could not sign out of google acc, code = ${task.exception}")
-//        }
 
-//        val lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(this)
-//        if(lastSignedInAccount == null) {
-//            val registerForActivityResult = registerForActivityResult(
-//                ActivityResultContracts.StartActivityForResult(),
-//                this::onSignedIn
-//            )
-//            registerForActivityResult.launch(client.signInIntent)
-//        }
+        val vertx = Vertx.vertx()
+        vertx.deployVerticle(ClientVertx())
 
+        firebaseToken()
         setContent {
-            LendyouApp()
+            if (false) {
+//                AuthUser()
+            } else {
+                LendyouApp()
+            }
         }
     }
 
-//    private fun onSignedIn(result: ActivityResult){
-//        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-//        handleSignInResult(task);
-//    }
-//
-//    private fun handleSignInResult(task: Task<GoogleSignInAccount>) {
-//        try{
-//            task.getResult(ApiException::class.java)
-//            Log.w("Lendyou", "Logged in!!!")
-//        }catch (e: ApiException){
-//            Log.w("Lendyou", "Signin failed, code = ${e.statusCode}")
-//        }
-//    }
+    private fun firebaseToken() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.e("Lendyou", "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+            val token = task.result
+            val msg = getString(R.string.msg_token_fmt, token)
+            Log.d("Lendyou", msg)
+            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+        }
+    }
+
 }

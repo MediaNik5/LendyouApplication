@@ -20,7 +20,7 @@ public final class Payment implements Serializable {
     ) {
         this.dateTime = dateTime;
         this.sum = sum;
-        sumDouble = sum.doubleValue();
+        this.sumDouble = sum.doubleValue();
         this.from = from;
         this.to = to;
     }

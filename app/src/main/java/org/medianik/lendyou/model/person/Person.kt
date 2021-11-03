@@ -1,6 +1,6 @@
 package org.medianik.lendyou.model.person
 
-import java.util.*
+import java.io.Serializable
 
 @JvmInline
 value class PersonId(val id: Long)
@@ -8,7 +8,7 @@ value class PersonId(val id: Long)
 open class Person(
     val id: PersonId,
     val name: String
-) {
+) : Serializable {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

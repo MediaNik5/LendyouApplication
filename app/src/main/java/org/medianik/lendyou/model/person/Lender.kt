@@ -1,17 +1,13 @@
 package org.medianik.lendyou.model.person
 
 import org.medianik.lendyou.model.bank.Account
-import org.medianik.lendyou.model.person.Passport
 import org.medianik.lendyou.model.debt.Debt
-import org.medianik.lendyou.model.person.Debtor
 import org.medianik.lendyou.model.debt.DebtInfo
-import java.lang.RuntimeException
-import java.util.ArrayList
-import java.util.HashMap
+import java.io.Serializable
 
 class Lender(phone: String, passport: Passport, id: PersonId, name: String) : User(
     phone, passport, id, name
-) {
+), Serializable {
     private val debts = HashMap<Long, Debt>()
     private val debtors = ArrayList<Debtor>()
 

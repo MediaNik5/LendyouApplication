@@ -56,16 +56,13 @@ fun NavGraphBuilder.addHomeGraph(
         )
     }
     composable(HomeSections.DEBTORS.route) { from ->
-        Prototype(featureName = R.string.home_debtors)
-//        Search(onSnackClick = { id -> onSnackSelected(id, from) }, modifier)
+        Debtors()
     }
     composable(HomeSections.LENDERS.route) { from ->
         Prototype(featureName = R.string.home_lenders)
-//        Cart(onSnackClick = { id -> onSnackSelected(id, from) }, modifier)
     }
     composable(HomeSections.PROFILE.route) {
         Prototype(featureName = R.string.home_profile)
-//        Profile(modifier)
     }
 }
 

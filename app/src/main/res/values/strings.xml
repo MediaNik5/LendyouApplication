@@ -26,4 +26,5 @@
     <string name="next_payment">Next payment is expected on %date</string>
     <string name="new_debt">Add new debt</string>
     <string name="pending_debts">Pending debts</string>
+    <string name="msg_token_fmt">Token: %s</string>
 </resources>

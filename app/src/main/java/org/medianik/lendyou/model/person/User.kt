@@ -1,6 +1,6 @@
 package org.medianik.lendyou.model.person
 
-import org.medianik.lendyou.model.person.Passport
+import java.io.Serializable
 import java.util.*
 
 open class User(
@@ -8,7 +8,7 @@ open class User(
     val passport: Passport,
     id: PersonId,
     name: String
-) : Person(id, name) {
+) : Person(id, name), Serializable {
     override fun hashCode(): Int {
         return Objects.hash(phone, passport)
     }

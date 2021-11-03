@@ -27,4 +27,5 @@
     <string name="next_payment">Следующий платёж ожидается %date</string>
     <string name="new_debt">Добавить новый долг</string>
     <string name="pending_debts">Долги в рассмотрении</string>
+    <string name="msg_token_fmt">Токен: %s</string>
 </resources>

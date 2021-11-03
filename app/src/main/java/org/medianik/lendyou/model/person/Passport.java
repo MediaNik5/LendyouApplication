@@ -1,8 +1,9 @@
 package org.medianik.lendyou.model.person;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public final class Passport {
+public final class Passport implements Serializable {
     private final long id;
     private final String firstName;
     private final String lastName;

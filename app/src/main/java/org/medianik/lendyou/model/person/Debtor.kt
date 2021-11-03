@@ -1,14 +1,10 @@
 package org.medianik.lendyou.model.person
 
-import org.medianik.lendyou.model.person.Passport
 import org.medianik.lendyou.model.debt.Debt
-import org.medianik.lendyou.model.person.Lender
-import java.lang.RuntimeException
-import java.util.ArrayList
-import java.util.HashMap
+import java.io.Serializable
 
-class Debtor(phone: String, passport: Passport, id: PersonId, name: String)
-    : User(phone, passport, id, name) {
+class Debtor(phone: String, passport: Passport, id: PersonId, name: String) :
+    User(phone, passport, id, name), Serializable {
     private val debts = HashMap<Long, Debt>()
     private val lenders = ArrayList<Lender>()
 
@@ -27,6 +23,7 @@ class Debtor(phone: String, passport: Passport, id: PersonId, name: String)
     }
 
     fun getLenders(): List<Lender> {
+        @Suppress("UNCHECKED_CAST")
         return lenders.clone() as List<Lender>
     }
 }
