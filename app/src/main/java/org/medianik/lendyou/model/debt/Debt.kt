@@ -6,9 +6,10 @@ import java.io.Serializable
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDateTime
+import java.util.concurrent.ThreadLocalRandom
 
 @JvmInline
-value class DebtId(val value: Long)
+value class DebtId(val id: Long)
 
 class Debt
 /**
@@ -18,14 +19,14 @@ class Debt
  * @param to Account of lender
  * @param payPeriod Period between payments
  */(
-    val id: DebtId,
     val debtInfo: DebtInfo,
-    private val from: Account,
-    private val to: Account,
-    val payPeriod: Duration
+    val from: Account,
+    val to: Account,
+    val payPeriod: Duration,
+    val id: DebtId = DebtId(ThreadLocalRandom.current().nextLong(Long.MAX_VALUE)),
+    private val payments: MutableList<Payment> = ArrayList()
 ) : Serializable {
     private val status = DebtStatus.NOT_PAID
-    private val payments = ArrayList<Payment>()
     fun status(): DebtStatus {
         return status
     }
@@ -49,9 +50,8 @@ class Debt
             return current
         }
 
-    @Suppress("UNCHECKED_CAST")
     fun getPayments(): List<Payment> {
-        return payments.clone() as List<Payment>
+        return payments
     }
 
     override fun toString(): String {

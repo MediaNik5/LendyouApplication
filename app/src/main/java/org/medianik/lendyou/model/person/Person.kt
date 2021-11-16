@@ -1,29 +1,34 @@
 package org.medianik.lendyou.model.person
 
 import java.io.Serializable
+import java.util.*
 
 @JvmInline
-value class PersonId(val id: Long)
+value class PersonId(val value: Long)
 
 open class Person(
     val id: PersonId,
-    val name: String
+    val name: String,
+    val phone: String,
+    val passport: Passport,
 ) : Serializable {
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        return if (other is Person) id == other.id else false
-    }
+    val lender: Lender by lazy { Lender(id, name, phone, passport) }
+    val debtor: Debtor by lazy { Debtor(id, name, phone, passport) }
 
     override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + name.hashCode()
-        return result
+        return Objects.hash(phone, passport)
     }
 
     override fun toString(): String {
-        return "Person[" +
-                "id=" + id + ", " +
-                "name=" + name + ']'
+        return "User[" +
+                "phone=" + phone + ", " +
+                "passport=" + passport + ']'
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Person) return false
+
+        return id == other.id
     }
 }

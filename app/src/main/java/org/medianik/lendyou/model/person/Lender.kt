@@ -4,12 +4,16 @@ import org.medianik.lendyou.model.bank.Account
 import org.medianik.lendyou.model.debt.Debt
 import org.medianik.lendyou.model.debt.DebtInfo
 import java.io.Serializable
+import java.util.*
 
-class Lender(phone: String, passport: Passport, id: PersonId, name: String) : User(
-    phone, passport, id, name
-), Serializable {
-    private val debts = HashMap<Long, Debt>()
-    private val debtors = ArrayList<Debtor>()
+class Lender(id: PersonId, name: String, phone: String, passport: Passport) :
+    Person(id, name, phone, passport), Serializable {
+
+    private val _debts = HashMap<Long, Debt>()
+    val debts: Collection<Debt> by lazy { Collections.unmodifiableCollection(_debts.values) }
+
+    private val _debtors = ArrayList<Debtor>()
+    val debtors: Collection<Debtor> by lazy { Collections.unmodifiableCollection(_debtors) }
 
     /**
      * Supposed to be called by debtor to ask if
@@ -27,13 +31,5 @@ class Lender(phone: String, passport: Passport, id: PersonId, name: String) : Us
 
     fun close(debt: Debt?): Boolean {
         throw RuntimeException("Not yet implemented")
-    }
-
-    fun getDebts(): List<Debt> {
-        return ArrayList(debts.values)
-    }
-
-    fun getDebtors(): List<Debtor> {
-        return debtors.clone() as List<Debtor>
     }
 }

@@ -4,7 +4,6 @@ import org.medianik.lendyou.model.person.PersonId
 import java.io.Serializable
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.*
 
 data class DebtInfo internal constructor(
     val sum: BigDecimal,
@@ -24,7 +23,7 @@ data class DebtInfo internal constructor(
         if (lenderId != other.lenderId) return false
         if (debtorId != other.debtorId) return false
         if (dateTime != other.dateTime) return false
-        if (sumDouble != other.sumDouble) return false
+        if (sum != other.sum) return false
 
         return true
     }

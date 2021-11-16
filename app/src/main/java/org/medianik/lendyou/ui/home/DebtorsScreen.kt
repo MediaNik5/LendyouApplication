@@ -1,6 +1,5 @@
 package org.medianik.lendyou.ui.home
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -32,7 +31,7 @@ fun Debtors(
     val onChange: () -> Unit = { changes++ }
 
     val debtors = rememberSaveable(changes) {
-        Repos.getInstance().currentRepo.getDebtors()
+        Repos.getInstance().getDebtors()
     }
     Debtors(
         debtors,
@@ -52,9 +51,6 @@ fun Debtors(
         Box {
             val selectedIndex = rememberSaveable { mutableStateOf(-1) }
             DebtorsList(debtors, onChange, selectedIndex)
-            AnimatedVisibility(visible = selectedIndex.value != -1) {
-
-            }
         }
     }
 }
@@ -115,7 +111,7 @@ fun DebtorItem(
                 horizontalArrangement = Arrangement.End
             ) {
                 val debtsSum = debtor
-                    .getDebts()
+                    .debts
                     .filter { it.debtInfo.debtorId == debtor.id }
                     .sumOf { it.debtInfo.sum }
                 Text(text = "Sum of debts: $debtsSum", modifier = Modifier.padding(4.dp))

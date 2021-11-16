@@ -28,4 +28,7 @@
     <string name="new_debt">Добавить новый долг</string>
     <string name="pending_debts">Долги в рассмотрении</string>
     <string name="msg_token_fmt">Токен: %s</string>
+    <string name="lender_placeholder">Кредитор</string>
+    <string name="confirm">Подтвердить</string>
+    <string name="debt_requested">Запрос отправлен</string>
 </resources>

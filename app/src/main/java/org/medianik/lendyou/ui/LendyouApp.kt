@@ -21,7 +21,7 @@ import org.medianik.lendyou.ui.theme.LendyouTheme
 
 @Composable
 fun LendyouApp() {
-    ProvideWindowInsets {
+    ProvideWindowInsets(windowInsetsAnimationsEnabled = true) {
         LendyouTheme {
             val appState = rememberLendyouAppState()
             LendyouScaffold(

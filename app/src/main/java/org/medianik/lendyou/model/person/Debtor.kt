@@ -2,11 +2,19 @@ package org.medianik.lendyou.model.person
 
 import org.medianik.lendyou.model.debt.Debt
 import java.io.Serializable
+import java.util.*
 
-class Debtor(phone: String, passport: Passport, id: PersonId, name: String) :
-    User(phone, passport, id, name), Serializable {
-    private val debts = HashMap<Long, Debt>()
-    private val lenders = ArrayList<Lender>()
+class Debtor(id: PersonId, name: String, phone: String, passport: Passport) :
+    Person(id, name, phone, passport), Serializable {
+
+    //    @Relation(
+//        parentColumn = "id",
+//        entityColumn = "debtor_id"
+//    )
+    private val _debts = HashMap<Long, Debt>()
+    val debts: Collection<Debt> by lazy { Collections.unmodifiableCollection(_debts.values) }
+    private val _debtors = ArrayList<Lender>()
+    val debtors: Collection<Lender> by lazy { Collections.unmodifiableCollection(_debtors) }
 
     /**
      * Pay `sum` of money for this `debt`
@@ -16,14 +24,5 @@ class Debtor(phone: String, passport: Passport, id: PersonId, name: String) :
      */
     fun putMoney(debt: Debt?, sum: Long): Boolean {
         throw RuntimeException("Not implemented exception")
-    }
-
-    fun getDebts(): List<Debt> {
-        return ArrayList(debts.values)
-    }
-
-    fun getLenders(): List<Lender> {
-        @Suppress("UNCHECKED_CAST")
-        return lenders.clone() as List<Lender>
     }
 }

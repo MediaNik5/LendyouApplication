@@ -15,23 +15,23 @@ import java.time.Duration
  * Repo containing info about this particular Lender&Debtor
  */
 interface Repo {
+    fun thisPerson(): PersonId
+
     fun getDebt(debtId: DebtId, forceUpdate: Boolean = false): Debt?
     fun getDebts(): List<Debt>
 
     /**
      * Returns all debts that [lender] holds on this user as [Debtor]
      */
-    fun getDebts(lender: Lender): List<Debt>
+    fun getDebts(lender: Lender): Collection<Debt>
 
     /**
      * Returns all debts that [debtor] is being hold by this user as [Lender]
      */
-    fun getDebts(debtor: Debtor): List<Debt>
+    fun getDebts(debtor: Debtor): Collection<Debt>
 
     fun getDebtors(): List<Debtor>
     fun getLenders(): List<Lender>
-
-    fun createDebtDefault(): Debt
 
     fun createDebt(debtInfo: DebtInfo, from: Account, to: Account, period: Duration = Duration.ofDays(30)): Debt
 

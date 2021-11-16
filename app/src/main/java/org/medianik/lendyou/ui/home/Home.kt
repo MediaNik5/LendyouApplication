@@ -50,7 +50,7 @@ fun NavGraphBuilder.addHomeGraph(
     composable(HomeSections.DEBTS.route) { from ->
 //        Prototype(featureName = R.string.home_debts)
         Debts(
-            onDebtClick = { id -> onDebtSelected(id.value, from) },
+            onDebtClick = { id -> onDebtSelected(id.id, from) },
             onNewDebtRequested = { onNewDebtRequested(from) },
             modifier
         )

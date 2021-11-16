@@ -1,39 +1,45 @@
 package org.medianik.lendyou.model.person;
 
+import androidx.annotation.NonNull;
+
 import java.io.Serializable;
 import java.util.Objects;
 
 public final class Passport implements Serializable {
-    private final long id;
+    private final String passportId;
     private final String firstName;
-    private final String lastName;
     private final String middleName;
+    private final String lastName;
 
     public Passport(
-            long id,
-            String firstName,
-            String lastName,
-            String middleName
+            @NonNull String passportId,
+            @NonNull String firstName,
+            @NonNull String middleName,
+            @NonNull String lastName
     ) {
-        this.id = id;
+        this.passportId = passportId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.middleName = middleName;
     }
 
-    public long id() {
-        return id;
+    @NonNull
+    public String getId() {
+        return passportId;
     }
 
-    public String firstName() {
+    @NonNull
+    public String getFirstName() {
         return firstName;
     }
 
-    public String lastName() {
+    @NonNull
+    public String getLastName() {
         return lastName;
     }
 
-    public String middleName() {
+    @NonNull
+    public String getMiddleName() {
         return middleName;
     }
 
@@ -42,7 +48,7 @@ public final class Passport implements Serializable {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
         var that = (Passport) obj;
-        return this.id == that.id &&
+        return this.passportId.equals(that.passportId) &&
                 Objects.equals(this.firstName, that.firstName) &&
                 Objects.equals(this.lastName, that.lastName) &&
                 Objects.equals(this.middleName, that.middleName);
@@ -50,13 +56,14 @@ public final class Passport implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, middleName);
+        return Objects.hash(passportId, firstName, lastName, middleName);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "Passport[" +
-                "id=" + id + ", " +
+                "id=" + passportId + ", " +
                 "firstName=" + firstName + ", " +
                 "lastName=" + lastName + ", " +
                 "middleName=" + middleName + ']';

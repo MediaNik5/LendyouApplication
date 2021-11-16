@@ -39,7 +39,7 @@ fun rememberLendyouAppState(
     navController: NavHostController = rememberNavController(),
     snackbarManager: SnackbarManager = SnackbarManager,
     resources: Resources = resources(),
-    coroutineScope: CoroutineScope = rememberCoroutineScope()
+    coroutineScope: CoroutineScope = rememberCoroutineScope(),
 ) =
     remember(scaffoldState, navController, snackbarManager, resources, coroutineScope) {
         LendyouAppState(scaffoldState, navController, snackbarManager, resources, coroutineScope)

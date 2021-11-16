@@ -1,25 +1,21 @@
 package org.medianik.lendyou.model;
 
 import org.medianik.lendyou.LocalRepo;
-import org.medianik.lendyou.model.person.Debtor;
-import org.medianik.lendyou.model.person.Lender;
+import org.medianik.lendyou.model.sql.LendyouDatabase;
 
 public class Repos {
-    private static final Repos instance = new Repos();
-
     @Deprecated
-    private Repos(){
+    private Repos() {
 
     }
 
-    private Repo repo = new LocalRepo();
-//    private Debtor thisDebtor;
-//    private Lender thisLender;
-    public Repo getCurrentRepo(){
+    private static Repo repo;
+
+    public static Repo getInstance() {
         return repo;
     }
 
-    public static Repos getInstance(){
-        return instance;
+    public static void initRepo(LendyouDatabase database) {
+        repo = new LocalRepo(database);
     }
 }

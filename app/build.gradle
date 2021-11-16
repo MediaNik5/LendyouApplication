@@ -11,7 +11,7 @@ android {
         minSdk 26
         targetSdk 31
         versionCode 1
-        versionName "0.1-alpha6"
+        versionName "0.2-alpha0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -67,6 +67,8 @@ android {
 }
 
 dependencies {
+    def room_version = "2.3.0"
+
     implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
     implementation("io.vertx:vertx-maven-service-factory:4.2.0")
 
@@ -77,18 +79,18 @@ dependencies {
     implementation "androidx.core:core-ktx:1.7.0"
     implementation "androidx.activity:activity-compose:1.4.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0"
-    implementation "androidx.navigation:navigation-compose:2.4.0-beta01"
+    implementation "androidx.navigation:navigation-compose:2.4.0-beta02"
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-rc01"
 
-    implementation "androidx.compose.foundation:foundation:1.0.4"
-    implementation "androidx.compose.foundation:foundation-layout:1.0.4"
-    implementation "androidx.compose.ui:ui:1.0.4"
-    implementation "androidx.compose.ui:ui-util:1.0.4"
-    implementation "androidx.compose.runtime:runtime:1.0.4"
-    implementation "androidx.compose.material:material:1.0.4"
-    implementation "androidx.compose.animation:animation:1.0.4"
-    implementation "androidx.compose.ui:ui-tooling:1.0.4"
-    implementation "androidx.compose.material:material-icons-extended:1.0.4"
+    implementation "androidx.compose.foundation:foundation:$compose_version"
+    implementation "androidx.compose.foundation:foundation-layout:$compose_version"
+    implementation "androidx.compose.ui:ui:$compose_version"
+    implementation "androidx.compose.ui:ui-util:$compose_version"
+    implementation "androidx.compose.runtime:runtime:$compose_version"
+    implementation "androidx.compose.material:material:$compose_version"
+    implementation "androidx.compose.animation:animation:$compose_version"
+    implementation "androidx.compose.ui:ui-tooling:$compose_version"
+    implementation "androidx.compose.material:material-icons-extended:$compose_version"
 
     implementation "com.google.accompanist:accompanist-insets:0.20.0"
     implementation "com.google.accompanist:accompanist-systemuicontroller:0.20.0"

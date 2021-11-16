@@ -1,5 +1,7 @@
 package org.medianik.lendyou.model.bank;
 
+import androidx.annotation.NonNull;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -9,7 +11,7 @@ import java.util.Objects;
 public final class Account implements Serializable {
     private final String cardNumber;
 
-    public Account(String cardNumber) {
+    public Account(@NonNull String cardNumber) {
         this.cardNumber = cardNumber;
     }
 
@@ -30,6 +32,7 @@ public final class Account implements Serializable {
         return Objects.hash(cardNumber);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return cardNumber;

@@ -13,7 +13,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,13 +59,13 @@ fun Debts(
     onNewDebtRequested: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var changes by rememberSaveable { mutableStateOf(0) }
+    var changes by remember { mutableStateOf(0) }
     val onChange: () -> Unit = { changes++ }
 
-    val debts = rememberSaveable(changes) {
-        Repos.getInstance().currentRepo.getDebts()
+    val debts = remember(changes) {
+        Repos.getInstance().getDebts()
     }
-    Repos.getInstance().currentRepo.subscribeToChanges(onChange)
+    Repos.getInstance().subscribeToChanges(onChange)
 
     Box {
         Debts(
@@ -96,7 +95,7 @@ private fun Debts(
     modifier: Modifier,
     onDebtsChange: () -> Unit,
 ) {
-    val expandedIndex = rememberSaveable{ mutableStateOf(-1) }
+    val expandedIndex = remember { mutableStateOf(-1) }
     LendyouSurface(
         modifier = modifier.fillMaxSize(),
         contentColor = LendyouTheme.colors.textInteractive
@@ -382,10 +381,10 @@ fun LenderAndDebtor(
 }
 
 private fun Debt.getDebtor() =
-    Repos.getInstance().currentRepo.getDebtor(debtInfo.debtorId)
+    Repos.getInstance().getDebtor(debtInfo.debtorId)
 
 private fun Debt.getLender() =
-    Repos.getInstance().currentRepo.getLender(debtInfo.lenderId)
+    Repos.getInstance().getLender(debtInfo.lenderId)
 
 
 // The Cards show a gradient which spans 3 cards and scrolls with parallax.
@@ -401,11 +400,11 @@ private val gradientWidth
 fun DebtItemPreview(){
     LendyouTheme{
         DebtItem(
-            debt = Repos.getInstance().currentRepo.getDebts().first(),
+            debt = Repos.getInstance().getDebts().first(),
             index = 0,
             onDebtClick = { },
-            onDebtsChange = {  },
-            expandedIndex = remember { mutableStateOf(-1)}
+            onDebtsChange = { },
+            expandedIndex = remember { mutableStateOf(-1) }
         )
     }
 }
