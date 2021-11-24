@@ -1,7 +1,7 @@
 package org.medianik.lendyou.model;
 
 import org.medianik.lendyou.LocalRepo;
-import org.medianik.lendyou.model.sql.LendyouDatabase;
+import org.medianik.lendyou.util.sql.LendyouDatabase;
 
 public class Repos {
     @Deprecated

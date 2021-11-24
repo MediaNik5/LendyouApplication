@@ -1,4 +1,4 @@
-package org.medianik.lendyou.model.sql
+package org.medianik.lendyou.util.sql
 
 import android.content.ContentValues
 import android.content.Context

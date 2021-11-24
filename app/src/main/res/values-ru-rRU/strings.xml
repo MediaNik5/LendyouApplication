@@ -31,4 +31,8 @@
     <string name="lender_placeholder">Кредитор</string>
     <string name="confirm">Подтвердить</string>
     <string name="debt_requested">Запрос отправлен</string>
+    <string name="bad_response">Сервер не смог обработать ваши данные. Пожалуйста, перезапустите приложение позже</string>
+    <string name="bad_server">Извините, сервер сейчас не отвечает.</string>
+    <string name="telegram_login">Сейчас вы будете перенаправлены в телеграм. Мы получим вашу общую информацию: никнейм, имя, telegram-id. Нажимая на кнопку, вы соглашаетесь передать нам эти данные</string>
+    <string name="telegram_login_button">Войти</string>
 </resources>

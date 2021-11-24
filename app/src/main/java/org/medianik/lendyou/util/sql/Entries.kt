@@ -1,6 +1,4 @@
-package org.medianik.lendyou.model.sql
-
-const val v = DebtEntry.TABLE_NAME
+package org.medianik.lendyou.util.sql
 
 internal object DebtEntry {
     const val TABLE_NAME = "debt"

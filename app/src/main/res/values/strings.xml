@@ -30,4 +30,8 @@
     <string name="lender_placeholder">Lender</string>
     <string name="confirm">Confirm</string>
     <string name="debt_requested">Request sent</string>
+    <string name="bad_response">Server could not accept your login info. Please relaunch app later</string>
+    <string name="bad_server">Sorry, server is not responding right now.</string>
+    <string name="telegram_login">You will be asked to authenticate through telegram bot. It will receive your common user info: username, name, telegram-id. Pressing the button means you agree to pass us this data.</string>
+    <string name="telegram_login_button">Login</string>
 </resources>

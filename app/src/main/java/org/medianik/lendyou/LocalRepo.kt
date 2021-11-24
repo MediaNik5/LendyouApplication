@@ -6,7 +6,7 @@ import org.medianik.lendyou.model.debt.Debt
 import org.medianik.lendyou.model.debt.DebtId
 import org.medianik.lendyou.model.debt.DebtInfo
 import org.medianik.lendyou.model.person.*
-import org.medianik.lendyou.model.sql.LendyouDatabase
+import org.medianik.lendyou.util.sql.LendyouDatabase
 import java.math.BigDecimal
 import java.time.Duration
 import java.util.*
