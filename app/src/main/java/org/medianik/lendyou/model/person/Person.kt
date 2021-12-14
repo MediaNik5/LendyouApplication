@@ -26,11 +26,6 @@ open class Person(
         return Objects.hash(email, passport)
     }
 
-    override fun toString(): String {
-        return "User[" +
-                "phone=" + email + ", " +
-                "passport=" + passport + ']'
-    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -39,9 +34,13 @@ open class Person(
         return id == other.id
     }
 
+    override fun toString(): String {
+        return "Person(id=$id, name='$name', email=$email)"
+    }
+
     companion object {
         private val personRegex =
-            Regex("Person\\{id=(\\w+), name=([\\w\\s,.]+), email=(.+@\\S+)\\}$")
+            Regex("Person\\{id=(\\w+), name='(.+)', email=(.+@\\S+)\\}$")
 
         @JvmStatic
         fun of(person: String): Person {

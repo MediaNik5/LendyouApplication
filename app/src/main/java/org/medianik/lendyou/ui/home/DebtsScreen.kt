@@ -4,9 +4,7 @@ import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement.End
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -38,6 +36,7 @@ import org.medianik.lendyou.util.DateTimeUtil.dateTimeFormat
 import org.medianik.lendyou.util.DateTimeUtil.isLaterThanToday
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 fun NavGraphBuilder.adddDebtScreenGraph(
     onPendingDebtsRequested: (NavBackStackEntry) -> Unit,
@@ -99,10 +98,6 @@ private fun Debts(
         modifier = modifier.fillMaxSize(),
         contentColor = LendyouTheme.colors.textInteractive
     ) {
-        if (debts.isEmpty()) {
-            NothingHereYet(R.string.no_debts)
-            return@LendyouSurface
-        }
         DebtsList(debts, onDebtClick, onDebtsChange, expandedIndex)
     }
 }
@@ -121,16 +116,20 @@ fun DebtsList(
     expandedIndex: MutableState<Int>,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier.verticalScroll(rememberScrollState())){
-        for(index in debts.indices){
-            key(debts[index].id){
-                DebtItem(
-                    debts[index],
-                    index,
-                    onDebtClick,
-                    onDebtsChange,
-                    expandedIndex,
-                )
+    Column {
+        if (debts.isEmpty()) {
+            NothingHereYet(R.string.no_debts)
+        } else {
+            for (index in debts.indices) {
+                key(debts[index].id) {
+                    DebtItem(
+                        debts[index],
+                        index,
+                        onDebtClick,
+                        onDebtsChange,
+                        expandedIndex,
+                    )
+                }
             }
         }
     }
@@ -275,12 +274,13 @@ fun dateFormat(
     showDate: Boolean = !isToday
 ): String {
     var string = ""
+    val zoned = date.plusSeconds(ZoneId.systemDefault().rules.getOffset(date).totalSeconds.toLong())
     if(showDate)
-        string += "${date.toLocalDate()}"
+        string += "${zoned.toLocalDate()}"
     if(showDate && showTime) //delimiter
         string += " "
     if(showTime)
-        string += date.toLocalTime().format(dateTimeFormat)
+        string += zoned.toLocalTime().format(dateTimeFormat)
 
     return string
 }

@@ -51,4 +51,6 @@
     <string name="email" translatable="false">Email</string>
     <string name="add_new_person_sent">Request sent</string>
     <string name="add_new_person">Person was added!</string>
+    <string name="no_lenders">You have no lenders yet</string>
+    <string name="sum_of_debts">Sum of debts: %s</string>
 </resources>

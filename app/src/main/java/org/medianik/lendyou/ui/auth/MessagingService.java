@@ -41,6 +41,7 @@ public class MessagingService extends FirebaseMessagingService {
         Log.d("Lendyou", "From: " + remoteMessage.getFrom());
 
         final var messageInfo = MessageInfo.of(remoteMessage.getData());
+
         if (messageInfo.type == MessageInfo.Type.NewDebtRequest) {
             final String debtInfo = messageInfo.contents;
             Repos.getInstance().addPendingDebt(DebtInfo.of(debtInfo));
@@ -75,9 +76,9 @@ public class MessagingService extends FirebaseMessagingService {
         }
 
         public static MessageInfo of(Map<String, String> map) {
-            final var type = Objects.requireNonNull(map.get("type"), "type cannot be empty");
-            final var contents = Objects.requireNonNull(map.get("contents"), "contents cannot be empty");
-            return new MessageInfo(Type.valueOf(type), contents);
+            final var type = map.get("type");
+            final var contents = map.get("contents");
+            return new MessageInfo(type == null ? null : Type.valueOf(type), contents);
         }
 
         public Type getType() {

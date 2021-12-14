@@ -1,6 +1,5 @@
 package org.medianik.lendyou.ui.debts
 
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
@@ -20,7 +19,6 @@ import org.medianik.lendyou.model.debt.DebtInfo
 import org.medianik.lendyou.ui.component.LendyouCard
 import org.medianik.lendyou.ui.component.LendyouSurface
 import org.medianik.lendyou.ui.component.NothingHereYet
-import org.medianik.lendyou.ui.component.RefreshableColumn
 import org.medianik.lendyou.ui.home.DebtCardHeight
 import org.medianik.lendyou.ui.home.DebtCardPadding
 import org.medianik.lendyou.ui.home.DebtCardShape
@@ -40,9 +38,8 @@ fun PendingDebts() {
     }
 
     LendyouSurface(Modifier.fillMaxSize()) {
-        RefreshableColumn(
+        Column(
             modifier = Modifier.fillMaxSize(),
-            onRefreshRequested = { Log.i("Lendyou", "HELLO REFRESH") }
         ) {
             PendingDebts(
                 pendingDebts,

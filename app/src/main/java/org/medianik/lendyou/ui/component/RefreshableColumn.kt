@@ -1,5 +1,6 @@
 package org.medianik.lendyou.ui.component
 
+import android.util.Log
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
@@ -12,9 +13,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import org.medianik.lendyou.ui.debts.MaxCircleSize
 import org.medianik.lendyou.ui.theme.LendyouTheme
+import java.lang.Float.min
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.max
-import kotlin.math.pow
 import kotlin.math.sqrt
 
 @Composable
@@ -29,13 +29,14 @@ inline fun RefreshableColumn(
     var offset by remember { mutableStateOf(sqrt(0f)) }
     val wasRecentlyRefreshed = AtomicBoolean(false)
 
-    LaunchedEffect(true) {
-        while (true) {
+    LaunchedEffect(offset > 0f) {
+        while (offset > 0) {
             delay(10)
-            offset = java.lang.Float.min(sqrt(max(offset.pow(2) - 18, 0f)), 50f)
+            offset = min(offset - 3, 50f)
             if (!wasRecentlyRefreshed.get() && offset == 0f) {
                 wasRecentlyRefreshed.set(false)
             }
+            Log.d("Lendyou", "LaunchedEffect, $offset")
         }
     }
 
@@ -45,10 +46,12 @@ inline fun RefreshableColumn(
             .scrollable(
                 orientation = Orientation.Vertical,
                 state = rememberScrollableState { delta ->
+                    if (wasRecentlyRefreshed.get())
+                        return@rememberScrollableState 0f
                     val oldValue = offset
-                    val a = oldValue.pow(2) + delta
-                    if (a > 0)
-                        offset = sqrt(max(a, 0f))
+                    val a = oldValue + delta / 8
+                    offset = a
+                    Log.d("Lendyou", offset.toString())
                     offset - oldValue
                 }
             ),
@@ -56,10 +59,10 @@ inline fun RefreshableColumn(
     ) {
         Box(
             modifier = Modifier
-                .size((java.lang.Float.min(2f * offset, MaxCircleSize)).dp)
+                .size((min(2f * offset, MaxCircleSize)).dp)
                 .align(Alignment.CenterHorizontally)
         ) {
-            val angleOffset = java.lang.Float.min(13f * offset, 360f)
+            val angleOffset = min(14f * offset, 360f)
             if (!wasRecentlyRefreshed.get() && angleOffset == 360f) {
                 onRefreshRequested()
                 wasRecentlyRefreshed.set(true)

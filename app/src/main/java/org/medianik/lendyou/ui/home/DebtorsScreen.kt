@@ -1,6 +1,5 @@
 package org.medianik.lendyou.ui.home
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -24,7 +24,7 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import org.medianik.lendyou.R
 import org.medianik.lendyou.model.Repos
-import org.medianik.lendyou.model.person.Debtor
+import org.medianik.lendyou.model.person.Person
 import org.medianik.lendyou.ui.MainDestinations
 import org.medianik.lendyou.ui.component.LendyouCard
 import org.medianik.lendyou.ui.component.LendyouFloatingActionButton
@@ -44,7 +44,7 @@ fun NavGraphBuilder.addPersonScreenGraph(
 @Composable
 fun Debtors(
     modifier: Modifier = Modifier,
-    onNewDebtorRequested: () -> Unit,
+    onNewPersonRequested: () -> Unit,
 ) {
     val changes = remember { mutableStateOf(0) }
     val onChange: () -> Unit = { changes.value++ }
@@ -53,56 +53,66 @@ fun Debtors(
         Repos.getInstance().getDebtors()
     }
     Repos.getInstance().subscribeToChanges(onChange)
-    Box {
-        Debtors(
-            debtors,
-            onChange,
-            modifier
-        )
+    Box(Modifier.fillMaxSize()) {
+        if (debtors.isEmpty()) {
+            NothingHereYet(R.string.no_debtors)
+        } else {
+            Persons(
+                persons = debtors,
+                onChange = onChange,
+                modifier = modifier,
+            ) { person ->
+                val debtsSum = Repos.getInstance().getDebts()
+                    .filter { debt -> debt.debtInfo.debtorId == person.id }.sumOf { it.left }
+                Text(
+                    stringResource(R.string.sum_of_debts).replace("%s", debtsSum.toString()),
+                    modifier = Modifier.padding(4.dp)
+                )
+            }
+        }
         LendyouFloatingActionButton(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(10.dp),
-            onClick = onNewDebtorRequested
+            onClick = onNewPersonRequested
         ) {
             Icon(imageVector = Icons.Outlined.Add, contentDescription = "")
         }
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun Debtors(
-    debtors: List<Debtor>,
+fun <T : Person> Persons(
+    persons: List<T>,
     onChange: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    description: @Composable RowScope.(T) -> Unit
 ) {
     LendyouSurface(modifier = modifier.fillMaxSize()) {
         Box {
             val selectedIndex = remember { mutableStateOf(-1) }
-            DebtorsList(debtors, onChange, selectedIndex)
-
+            PersonsList(persons, onChange, selectedIndex, description)
         }
     }
 }
 
 @Composable
-fun DebtorsList(
-    debtors: List<Debtor>,
+fun <T : Person> PersonsList(
+    persons: List<T>,
     onChange: () -> Unit,
     selectedIndex: MutableState<Int>,
+    description: @Composable RowScope.(T) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier.verticalScroll(rememberScrollState())) {
-        if (debtors.isEmpty())
-            NothingHereYet(R.string.no_debtors)
-        for (index in debtors.indices) {
-            key(debtors[index].id) {
-                DebtorItem(
-                    debtors[index],
+        for (index in persons.indices) {
+            key(persons[index].id) {
+                PersonItem(
+                    persons[index],
                     index,
                     onChange,
-                    selectedIndex
+                    selectedIndex,
+                    description,
                 )
             }
         }
@@ -115,11 +125,12 @@ private val DebtorCardHeight = 100.dp
 private val DebtorCardShape = RoundedCornerShape(16.dp)
 
 @Composable
-fun DebtorItem(
-    debtor: Debtor,
+fun <T : Person> PersonItem(
+    person: T,
     index: Int,
     onChange: () -> Unit,
-    selectedIndex: MutableState<Int>
+    selectedIndex: MutableState<Int>,
+    description: @Composable RowScope.(T) -> Unit
 ) {
     LendyouCard(
         modifier = Modifier
@@ -141,19 +152,14 @@ fun DebtorItem(
                         .size(DebtorCardHeight - DebtorCardPadding)
                         .padding(DebtorCardPadding / 2)
                 )
-                Text(text = debtor.name, modifier = Modifier.padding(8.dp))
+                Text(text = person.name, modifier = Modifier.padding(8.dp))
             }
             Row(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End
-            ) {
-                val debtsSum = debtor
-                    .debts
-                    .filter { it.debtInfo.debtorId == debtor.id }
-                    .sumOf { it.debtInfo.sum }
-                Text(text = "Sum of debts: $debtsSum", modifier = Modifier.padding(4.dp))
-            }
+                horizontalArrangement = Arrangement.End,
+                content = { description(person) }
+            )
         }
     }
 }

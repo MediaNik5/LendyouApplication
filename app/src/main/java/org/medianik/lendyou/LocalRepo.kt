@@ -81,9 +81,10 @@ class LocalRepo(
 
     override fun addPerson(person: Person): Boolean {
         val added = null == persons.putIfAbsent(person.id, person)
-        database.addPerson(person)
-        if (added)
+        if (added) {
+            database.addPerson(person)
             subscribers.update()
+        }
         return added
     }
 
@@ -115,10 +116,13 @@ class LocalRepo(
         throw IllegalArgumentException("You have to be lender to create debts")
     }
 
-    override fun addDebtAsDebtor(debt: Debt) {
-        debts.addDebt(debt)
-        database.addDebt(debt)
-        subscribers.update()
+    override fun addDebtAsDebtor(debt: Debt): Boolean {
+        if (debts.addDebt(debt)) {
+            database.addDebt(debt)
+            subscribers.update()
+            return true
+        }
+        return false
     }
 
     override fun declineDebtAsLender(debtInfo: DebtInfo) {
@@ -142,10 +146,10 @@ class LocalRepo(
     }
 
     override fun declineDebtAsDebtor(debtInfo: DebtInfo) {
-        assert(debtInfo.debtorId == thisId)
-        pendingDebts.remove(debtInfo)
-        subscribers.update()
-        SnackbarManager.showMessage(R.string.pending_debt_declined)
+        if (pendingDebts.remove(debtInfo)) {
+            subscribers.update()
+            SnackbarManager.showMessage(R.string.pending_debt_declined)
+        }
     }
 
 
@@ -206,10 +210,12 @@ class LocalRepo(
     }
 
     override fun addPendingDebt(debtInfo: DebtInfo) {
-        pendingDebts.add(debtInfo)
-        database.addPendingDebt(debtInfo)
-        subscribers.update()
-        Log.d("Lendyou", "New debtInfo came here: $debtInfo")
+        if (!pendingDebts.contains(debtInfo)) {
+            pendingDebts.add(debtInfo)
+            database.addPendingDebt(debtInfo)
+            subscribers.update()
+            Log.d("Lendyou", "New debtInfo came here: $debtInfo")
+        }
     }
 
     override fun getPendingDebts(sortingOrder: SortingOrder?): List<DebtInfo> {
@@ -258,9 +264,8 @@ class LocalRepo(
             func()
     }
 
-    private fun MutableMap<DebtId, Debt>.addDebt(debt: Debt): Debt {
-        put(debt.id, debt)
-        return debt
+    private fun MutableMap<DebtId, Debt>.addDebt(debt: Debt): Boolean {
+        return put(debt.id, debt) == null
     }
 }
 

@@ -49,4 +49,6 @@
     <string name="pending_debt_not_declined">Произошла ошибка во время отклонения заявки</string>
     <string name="add_new_person_sent">Запрос отправлен</string>
     <string name="add_new_person">Человек добавлен!</string>
+    <string name="no_lenders">У вас ещё нет кредиторов</string>
+    <string name="sum_of_debts">Сумма долгов: %s</string>
 </resources>

@@ -68,7 +68,7 @@ fun NavGraphBuilder.addHomeGraph(
         Debtors { onNewPersonRequested(from) }
     }
     composable(HomeSections.LENDERS.route) { from ->
-        Prototype(featureName = R.string.home_lenders)
+        Lenders { onNewPersonRequested(from) }
     }
     composable(HomeSections.PAYMENTS.route) {
         Prototype(featureName = R.string.payments)

@@ -44,7 +44,7 @@ interface Repo {
         period: Duration = Duration.ofDays(30)
     ): Debt
 
-    fun addDebtAsDebtor(debt: Debt)
+    fun addDebtAsDebtor(debt: Debt): Boolean
 
     fun declineDebtAsLender(debtInfo: DebtInfo)
     fun declineDebtAsDebtor(debtInfo: DebtInfo)

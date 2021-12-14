@@ -25,6 +25,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        =
         <service
             android:name="org.medianik.lendyou.ui.auth.MessagingService"
             android:exported="false">
