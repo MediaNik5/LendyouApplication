@@ -5,7 +5,6 @@ import java.io.Serializable
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.util.regex.Pattern
 
 data class DebtInfo internal constructor(
     val sum: BigDecimal,
@@ -17,11 +16,11 @@ data class DebtInfo internal constructor(
 
 
     override fun toString(): String {
-        return "DebtInfo[" +
+        return "DebtInfo{" +
                 "sum=" + sum + ", " +
                 "lenderId=" + lenderId + ", " +
                 "debtorId=" + debtorId + ", " +
-                "dateTime=" + dateTime.toEpochSecond(ZoneOffset.UTC) + ']'
+                "dateTime=" + dateTime.toEpochSecond(ZoneOffset.UTC) + '}'
     }
 
     companion object {
@@ -36,22 +35,24 @@ data class DebtInfo internal constructor(
             dateTime: LocalDateTime,
         ) = DebtInfo(sum, lenderId, debtorId, dateTime)
 
-        private val debtInfoMatcher = Pattern.compile(
-            "DebtInfo\\[sum=([+-]?(?:[0-9]*[.])?[0-9]+), lenderId=(\\w+), debtorId=(\\w+), dateTime=(\\d+)\\]"
+        val debtInfoRegex = Regex(
+            "DebtInfo\\{sum=([+-]?(?:[0-9]*[.])?[0-9]+), lenderId=(\\w+), debtorId=(\\w+), dateTime=(\\d+)\\}"
         )
 
         @JvmStatic
         @JvmName("of")
         fun of(string: String): DebtInfo {
-            val matcher = debtInfoMatcher.matcher(string)
-            return if (matcher.find()) {
+            val matcher = debtInfoRegex.find(string)
+            return if (matcher != null) {
+                val values = matcher.groupValues
                 of(
-                    BigDecimal(matcher.group(1)),
-                    PersonId(matcher.group(2)),
-                    PersonId(matcher.group(3)),
-                    LocalDateTime.ofEpochSecond(matcher.group(4).toLong(), 0, ZoneOffset.UTC)
+                    BigDecimal(values[1]),
+                    PersonId(values[2]),
+                    PersonId(values[3]),
+                    LocalDateTime.ofEpochSecond(values[4].toLong(), 0, ZoneOffset.UTC)
                 )
-            } else throw IllegalArgumentException("Cannot make DebtInfo of string $string")
+            } else
+                throw IllegalArgumentException("Cannot make DebtInfo of string $string")
         }
     }
 }

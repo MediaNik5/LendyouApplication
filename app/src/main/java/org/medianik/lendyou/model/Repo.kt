@@ -7,6 +7,7 @@ import org.medianik.lendyou.model.debt.DebtInfo
 import org.medianik.lendyou.model.debt.SortingOrder
 import org.medianik.lendyou.model.person.Debtor
 import org.medianik.lendyou.model.person.Lender
+import org.medianik.lendyou.model.person.Person
 import org.medianik.lendyou.model.person.PersonId
 import java.math.BigDecimal
 import java.time.Duration
@@ -31,6 +32,8 @@ interface Repo {
      */
     fun getDebts(debtor: Debtor): Collection<Debt>
 
+    fun addPerson(person: Person): Boolean
+    fun addPerson(email: String): Boolean
     fun getDebtors(): List<Debtor>
     fun getLenders(): List<Lender>
 
@@ -41,7 +44,10 @@ interface Repo {
         period: Duration = Duration.ofDays(30)
     ): Debt
 
-    fun declineDebt(it: DebtInfo)
+    fun addDebtAsDebtor(debt: Debt)
+
+    fun declineDebtAsLender(debtInfo: DebtInfo)
+    fun declineDebtAsDebtor(debtInfo: DebtInfo)
 
     fun payDebt(debt: Debt, sum: BigDecimal = debt.debtInfo.sum): Boolean
 

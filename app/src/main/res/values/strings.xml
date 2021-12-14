@@ -48,4 +48,7 @@
     <string name="button_decline">Decline</string>
     <string name="pending_debt_declined">Pending debt was declined</string>
     <string name="pending_debt_not_declined">Error occured while decliying debt</string>
+    <string name="email" translatable="false">Email</string>
+    <string name="add_new_person_sent">Request sent</string>
+    <string name="add_new_person">Person was added!</string>
 </resources>

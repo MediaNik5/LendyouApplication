@@ -38,4 +38,24 @@ open class Person(
 
         return id == other.id
     }
+
+    companion object {
+        private val personRegex =
+            Regex("Person\\{id=(\\w+), name=([\\w\\s,.]+), email=(.+@\\S+)\\}$")
+
+        @JvmStatic
+        fun of(person: String): Person {
+            val matcher = personRegex.find(person)
+            if (matcher != null) {
+                val values = matcher.groupValues
+                return Person(
+                    PersonId(values[1]),
+                    values[2],
+                    values[3],
+                    Passport("sdfsd", values[2], "sdfsdf", "sdfsdf")
+                )
+            }
+            throw IllegalArgumentException("Cannot convert string to person: $person")
+        }
+    }
 }

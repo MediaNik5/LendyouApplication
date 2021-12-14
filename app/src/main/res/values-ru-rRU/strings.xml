@@ -47,4 +47,6 @@
     <string name="button_decline">Отказать</string>
     <string name="pending_debt_declined">Заявка в долг отклонена</string>
     <string name="pending_debt_not_declined">Произошла ошибка во время отклонения заявки</string>
+    <string name="add_new_person_sent">Запрос отправлен</string>
+    <string name="add_new_person">Человек добавлен!</string>
 </resources>

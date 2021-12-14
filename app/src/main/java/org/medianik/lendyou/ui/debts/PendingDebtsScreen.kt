@@ -50,7 +50,7 @@ fun PendingDebts() {
                     Repos.getInstance().createDebt(it, Account("NO"), Account("NO"))
                 },
                 onDecline = {
-                    Repos.getInstance().declineDebt(it)
+                    Repos.getInstance().declineDebtAsDebtor(it)
                 }
             )
         }

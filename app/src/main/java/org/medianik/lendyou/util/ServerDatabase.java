@@ -54,6 +54,13 @@ public class ServerDatabase {
     }
 
     public @NonNull
+    Task<Void> addPerson(String email) {
+        long id = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
+        var reference = underlyingDatabase.getReference("newPerson/" + uid + '/' + id);
+        return reference.setValue(email);
+    }
+
+    public @NonNull
     Task<Void> declineDebt(@NotNull DebtInfo debtInfo) {
         long id = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
         var reference = underlyingDatabase.getReference("declineDebt/" + uid + '/' + id);

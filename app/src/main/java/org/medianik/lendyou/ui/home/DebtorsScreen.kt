@@ -13,33 +13,46 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import org.medianik.lendyou.R
 import org.medianik.lendyou.model.Repos
 import org.medianik.lendyou.model.person.Debtor
+import org.medianik.lendyou.ui.MainDestinations
 import org.medianik.lendyou.ui.component.LendyouCard
 import org.medianik.lendyou.ui.component.LendyouFloatingActionButton
 import org.medianik.lendyou.ui.component.LendyouSurface
 import org.medianik.lendyou.ui.component.NothingHereYet
+import org.medianik.lendyou.ui.people.NewPerson
+
+fun NavGraphBuilder.addPersonScreenGraph(
+    navigateBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    composable(MainDestinations.NEW_PERSON_ROUT) { from ->
+        NewPerson(navigateBack)
+    }
+}
 
 @Composable
 fun Debtors(
     modifier: Modifier = Modifier,
     onNewDebtorRequested: () -> Unit,
 ) {
-    var changes: Int by rememberSaveable { mutableStateOf(0) }
-    val onChange: () -> Unit = { changes++ }
+    val changes = remember { mutableStateOf(0) }
+    val onChange: () -> Unit = { changes.value++ }
 
-    val debtors = rememberSaveable(changes) {
+    val debtors = remember(changes.value) {
         Repos.getInstance().getDebtors()
     }
+    Repos.getInstance().subscribeToChanges(onChange)
     Box {
         Debtors(
             debtors,
@@ -66,7 +79,7 @@ fun Debtors(
 ) {
     LendyouSurface(modifier = modifier.fillMaxSize()) {
         Box {
-            val selectedIndex = rememberSaveable { mutableStateOf(-1) }
+            val selectedIndex = remember { mutableStateOf(-1) }
             DebtorsList(debtors, onChange, selectedIndex)
 
         }

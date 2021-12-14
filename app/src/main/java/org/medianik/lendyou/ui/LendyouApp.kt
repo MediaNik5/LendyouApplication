@@ -13,10 +13,7 @@ import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.insets.systemBarsPadding
 import org.medianik.lendyou.ui.component.LendyouScaffold
 import org.medianik.lendyou.ui.component.LendyouSnackbar
-import org.medianik.lendyou.ui.home.HomeSections
-import org.medianik.lendyou.ui.home.LendyouBottomBar
-import org.medianik.lendyou.ui.home.addHomeGraph
-import org.medianik.lendyou.ui.home.adddDebtScreenGraph
+import org.medianik.lendyou.ui.home.*
 import org.medianik.lendyou.ui.theme.LendyouTheme
 
 
@@ -93,14 +90,6 @@ private fun NavGraphBuilder.lendyouNavGraph(
             onPendingDebtsRequested
         )
     }
+    addPersonScreenGraph(navigateBack)
     adddDebtScreenGraph(onPendingDebtsRequested, navigateBack)
-//    composable(
-//        "${MainDestinations.DEBT_DETAIL_ROUTE}/{${MainDestinations.DEBT_ID_KEY}}",
-//        arguments = listOf(navArgument(MainDestinations.DEBT_ID_KEY) { type = NavType.LongType })
-//    ) { backStackEntry ->
-//        val arguments = requireNotNull(backStackEntry.arguments)
-//        val debtId = arguments.getLong(MainDestinations.DEBT_ID_KEY)
-//        Box(Modifier.fillMaxSize()) {}
-////        DebtDetail(debtId, upPress)
-//    }
 }

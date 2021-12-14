@@ -21,7 +21,7 @@ import java.time.ZoneOffset
 class LendyouDatabase(context: Context?) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     companion object {
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 2
         const val DATABASE_NAME = "Lendyou.db"
         private const val SQL_CREATE_DEBT_ENTRIES = "create table " + DebtEntry.TABLE_NAME + " (" +
                 DebtEntry.COLUMN_ID + " INTEGER PRIMARY KEY, " +
@@ -66,7 +66,7 @@ class LendyouDatabase(context: Context?) :
 
         private const val SQL_CREATE_PERSON_ENTRIES =
             "create table " + PersonEntry.TABLE_NAME + " (" +
-                    PersonEntry.COLUMN_ID + " INTEGER, " +
+                    PersonEntry.COLUMN_ID + " TEXT, " +
                     PersonEntry.COLUMN_EMAIL + " TEXT, " +
                     PersonEntry.COLUMN_NAME + " TEXT)"
         private const val SQL_DELETE_PERSON_ENTRIES =
@@ -148,14 +148,14 @@ class LendyouDatabase(context: Context?) :
         }
     }
 
-    fun addPerson(lender: Person): Boolean {
+    fun addPerson(person: Person): Boolean {
         val values = ContentValues(3)
 
-        values.put(PersonEntry.COLUMN_ID, lender.id.value)
-        values.put(PersonEntry.COLUMN_NAME, lender.name)
-        values.put(PersonEntry.COLUMN_EMAIL, lender.email)
+        values.put(PersonEntry.COLUMN_ID, person.id.value)
+        values.put(PersonEntry.COLUMN_NAME, person.name)
+        values.put(PersonEntry.COLUMN_EMAIL, person.email)
 
-        addPassport(lender.passport, lender.id)
+        addPassport(person.passport, person.id)
 
         return 1L == database.insert(PersonEntry.TABLE_NAME, null, values)
     }
@@ -197,7 +197,7 @@ class LendyouDatabase(context: Context?) :
         allPayments(DebtId(cursor.getLong(0))),
     )
 
-    fun pendingDebts(): List<DebtInfo> {
+    fun allPendingDebts(): List<DebtInfo> {
         val cursor = database.rawQuery(SQL_GET_ALL_DEBT_INFO, EMPTY_ARGS)
         cursor.use {
             val debtInfos = ArrayList<DebtInfo>(cursor.count)

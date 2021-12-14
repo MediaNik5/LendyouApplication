@@ -34,7 +34,7 @@ internal object PaymentEntry {
 }
 
 internal object PersonEntry {
-    const val TABLE_NAME = "lender"
+    const val TABLE_NAME = "person"
 
     const val COLUMN_ID = "id"
     const val COLUMN_NAME = "name"

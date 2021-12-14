@@ -6,10 +6,15 @@ import java.io.Serializable
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.ThreadLocalRandom
 
 @JvmInline
-value class DebtId(val id: Long)
+value class DebtId(val id: Long) {
+    override fun toString(): String {
+        return id.toString()
+    }
+}
 
 class Debt
 /**
@@ -56,7 +61,7 @@ class Debt
     }
 
     override fun toString(): String {
-        return "Debt(id=$id, debtInfo=$debtInfo, from=$from, to=$to, period=$payPeriod, status=$status, payments=$payments)"
+        return "Debt{id=${id.id}, debtInfo=$debtInfo, from=$from, to=$to, period=${payPeriod.toNanos()}}"
     }
 
     fun addPayment(sum: BigDecimal, time: LocalDateTime = LocalDateTime.now()) {
@@ -69,6 +74,32 @@ class Debt
         get() {
             throw RuntimeException("Not implemented exception")
         }
+
+    companion object {
+        private val debtRegex = Regex(
+            "Debt\\{id=(\\d+), debtInfo=(" + DebtInfo.debtInfoRegex + "), from=(\\w+), to=(\\w+), period=(\\d+)\\}"
+        )
+
+        @JvmStatic
+        fun of(string: String): Debt {
+            val matcher = debtRegex.find(string)
+            if (matcher != null) {
+                val values = matcher.groupValues
+                return of(
+                    values[1].toLong(),
+                    DebtInfo.of(values[2]),
+                    Account(values[7]),
+                    Account(values[8]),
+                    values[9].toLong(),
+                )
+            }
+            throw IllegalArgumentException("Cannot convert to Debt $string")
+        }
+
+        fun of(id: Long, debtInfo: DebtInfo, from: Account, to: Account, duration: Long): Debt {
+            return Debt(debtInfo, from, to, Duration.of(duration, ChronoUnit.NANOS), DebtId(id))
+        }
+    }
 }
 
 fun Debt.isNotPaid() =

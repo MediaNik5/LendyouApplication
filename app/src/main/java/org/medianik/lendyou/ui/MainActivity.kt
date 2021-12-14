@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
             lendyouDatabase,
             serverDatabase,
             firebaseAuth,
-            sharedPreferences.getString("debtorLender", "lender") == "lender"
+            sharedPreferences.getString("debtorLender", "lender") != "debtor"
         )
         setContent {
             LendyouApp()

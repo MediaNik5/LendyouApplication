@@ -14,7 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import org.medianik.lendyou.R
 import org.medianik.lendyou.model.Repos
@@ -24,7 +23,6 @@ import org.medianik.lendyou.ui.component.*
 import org.medianik.lendyou.ui.theme.LendyouTheme
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-
 
 private val FabPadding = 10.dp
 
@@ -59,8 +57,6 @@ fun NewDebt(
                 .padding(12.dp)
                 .padding(top = 100.dp)
         ) {
-            val context = LocalContext.current
-
             val inputSum = remember { mutableStateOf("1000") }
             val selectedLender = remember { mutableStateOf(-1) }
             NumberField(Modifier.fillMaxWidth(), inputSum) { Text("Sum") }
@@ -102,7 +98,7 @@ private fun ColumnScope.ConfirmButton(selectedLender: Int, onClick: () -> Unit) 
                 LendyouTheme.colors.textSecondary
             )
         ) {
-            Text(text = "Confirm", modifier = Modifier)
+            Text(text = "Confirm")
         }
     }
 }

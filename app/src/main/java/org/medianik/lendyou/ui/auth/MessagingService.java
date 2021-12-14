@@ -9,8 +9,12 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.google.gson.Gson;
 
+import org.medianik.lendyou.R;
 import org.medianik.lendyou.model.Repos;
+import org.medianik.lendyou.model.SnackbarManager;
+import org.medianik.lendyou.model.debt.Debt;
 import org.medianik.lendyou.model.debt.DebtInfo;
+import org.medianik.lendyou.model.person.Person;
 
 import java.util.Map;
 import java.util.Objects;
@@ -37,12 +41,21 @@ public class MessagingService extends FirebaseMessagingService {
         Log.d("Lendyou", "From: " + remoteMessage.getFrom());
 
         final var messageInfo = MessageInfo.of(remoteMessage.getData());
-        if (messageInfo.type == MessageInfo.Type.NewDebt) {
+        if (messageInfo.type == MessageInfo.Type.NewDebtRequest) {
             final String debtInfo = messageInfo.contents;
             Repos.getInstance().addPendingDebt(DebtInfo.of(debtInfo));
         } else if (messageInfo.type == MessageInfo.Type.DeclineDebt) {
             final String debtInfo = messageInfo.contents;
-            Repos.getInstance().declineDebt(DebtInfo.of(debtInfo));
+            Repos.getInstance().declineDebtAsDebtor(DebtInfo.of(debtInfo));
+        } else if (messageInfo.type == MessageInfo.Type.NewDebt) {
+            final String debt = messageInfo.contents;
+            Repos.getInstance().addDebtAsDebtor(Debt.of(debt));
+        } else if (messageInfo.type == MessageInfo.Type.NewPerson) {
+            final String person = messageInfo.contents;
+            boolean added = Repos.getInstance().addPerson(Person.of(person));
+            if (added) {
+                SnackbarManager.INSTANCE.showMessage(R.string.add_new_person);
+            }
         }
 
         RemoteMessage.Notification notification = remoteMessage.getNotification();
@@ -100,7 +113,9 @@ public class MessagingService extends FirebaseMessagingService {
         public enum Type {
             Noop,
             NewDebt,
+            NewDebtRequest,
             DeclineDebt,
+            NewPerson,
         }
     }
 }

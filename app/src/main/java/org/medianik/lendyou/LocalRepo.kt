@@ -29,12 +29,19 @@ class LocalRepo(
     override fun thisPerson() = thisId
 
     private val thisId = PersonId(auth.currentUser!!.uid)
-    private val pendingDebts: CopyOnWriteArrayList<DebtInfo> = CopyOnWriteArrayList()
-    private val debts: MutableMap<DebtId, Debt> = ConcurrentHashMap()
-    private val persons: MutableMap<PersonId, Person> = ConcurrentHashMap()
-    private val subscribers: Deque<() -> Unit> = ConcurrentLinkedDeque()
-
-    init {
+    private val pendingDebts: CopyOnWriteArrayList<DebtInfo> by lazy {
+        CopyOnWriteArrayList<DebtInfo>().also {
+            it.addAll(database.allPendingDebts())
+        }
+    }
+    private val debts: MutableMap<DebtId, Debt> by lazy {
+        ConcurrentHashMap<DebtId, Debt>().also {
+            database.allDebts().forEach { debt ->
+                it.addDebt(debt)
+            }
+        }
+    }
+    private val persons: MutableMap<PersonId, Person> by lazy {
         database.addPerson(
             Person(
                 thisId,
@@ -48,21 +55,20 @@ class LocalRepo(
                 )
             )
         )
-        for (person in database.allPersons()) {
-            persons[person.id] = person
+        ConcurrentHashMap<PersonId, Person>().also { map ->
+            database.allPersons().forEach { person ->
+                map[person.id] = person
+            }
         }
-        for (debt in database.allDebts()) {
-            debts.addDebt(debt)
-        }
-        pendingDebts.addAll(database.pendingDebts())
     }
+    private val subscribers: Deque<() -> Unit> = ConcurrentLinkedDeque()
 
     override fun getDebt(debtId: DebtId, forceUpdate: Boolean): Debt? {
         return debts[debtId]
     }
 
     override fun getDebts(): List<Debt> {
-        return ArrayList(debts.values)
+        return debts.values.filter { thisId == if (isLender) it.debtInfo.lenderId else it.debtInfo.debtorId }
     }
 
     override fun getDebts(lender: Lender): Collection<Debt> {
@@ -73,12 +79,28 @@ class LocalRepo(
         return persons.values.first { it.id == debtor.id }.debtor.debts
     }
 
+    override fun addPerson(person: Person): Boolean {
+        val added = null == persons.putIfAbsent(person.id, person)
+        database.addPerson(person)
+        if (added)
+            subscribers.update()
+        return added
+    }
+
+    override fun addPerson(email: String): Boolean {
+        if (persons.all { it.value.email != email }) {
+            serverDatabase.addPerson(email)
+            return true
+        }
+        return false
+    }
+
     override fun getDebtors(): List<Debtor> {
-        return persons.values.map { it.debtor }
+        return persons.values.filterNot { it.id == thisId }.map { it.debtor }
     }
 
     override fun getLenders(): List<Lender> {
-        return persons.values.map { it.lender }
+        return persons.values.filterNot { it.id == thisId }.map { it.lender }
     }
 
     override fun createDebt(
@@ -93,7 +115,13 @@ class LocalRepo(
         throw IllegalArgumentException("You have to be lender to create debts")
     }
 
-    override fun declineDebt(debtInfo: DebtInfo) {
+    override fun addDebtAsDebtor(debt: Debt) {
+        debts.addDebt(debt)
+        database.addDebt(debt)
+        subscribers.update()
+    }
+
+    override fun declineDebtAsLender(debtInfo: DebtInfo) {
         if (isLender) {
             serverDatabase.declineDebt(debtInfo).addOnSuccessListener {
                 database.removePendingDebt(debtInfo)
@@ -108,13 +136,18 @@ class LocalRepo(
                     exception
                 )
             }
-        } else {
-            pendingDebts.remove(debtInfo)
-            subscribers.update()
-            SnackbarManager.showMessage(R.string.pending_debt_declined)
+            return
         }
         throw IllegalStateException("Cannot delete pending debt as debtor")
     }
+
+    override fun declineDebtAsDebtor(debtInfo: DebtInfo) {
+        assert(debtInfo.debtorId == thisId)
+        pendingDebts.remove(debtInfo)
+        subscribers.update()
+        SnackbarManager.showMessage(R.string.pending_debt_declined)
+    }
+
 
     // Unchecked
     private fun createDebtAsLender(
