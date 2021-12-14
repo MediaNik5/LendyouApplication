@@ -1,9 +1,9 @@
 package org.medianik.lendyou.ui.home
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement.End
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -27,13 +27,11 @@ import androidx.navigation.compose.composable
 import org.medianik.lendyou.R
 import org.medianik.lendyou.model.Repos
 import org.medianik.lendyou.model.bank.Payment
-import org.medianik.lendyou.model.debt.Debt
-import org.medianik.lendyou.model.debt.DebtId
-import org.medianik.lendyou.model.debt.isNotPaid
-import org.medianik.lendyou.model.debt.lastPaymentDateOrInitial
+import org.medianik.lendyou.model.debt.*
 import org.medianik.lendyou.ui.MainDestinations
 import org.medianik.lendyou.ui.component.*
 import org.medianik.lendyou.ui.debts.NewDebtScreen
+import org.medianik.lendyou.ui.debts.PendingDebts
 import org.medianik.lendyou.ui.theme.LendyouTheme
 import org.medianik.lendyou.util.DateTimeUtil
 import org.medianik.lendyou.util.DateTimeUtil.dateTimeFormat
@@ -42,14 +40,15 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 fun NavGraphBuilder.adddDebtScreenGraph(
-    onNewDebtRequested: (NavBackStackEntry) -> Unit,
+    onPendingDebtsRequested: (NavBackStackEntry) -> Unit,
+    navigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     composable(MainDestinations.NEW_DEBT_ROUT) { from ->
-        NewDebtScreen { onNewDebtRequested(from) }
+        NewDebtScreen(navigateBack) { onPendingDebtsRequested(from) }
     }
     composable(MainDestinations.PENDING_DEBTS_ROUT) { from ->
-        Prototype(featureName = R.string.pending_debts, modifier = modifier)
+        PendingDebts()
     }
 }
 
@@ -67,7 +66,7 @@ fun Debts(
     }
     Repos.getInstance().subscribeToChanges(onChange)
 
-    Box {
+    Box(modifier.fillMaxSize()) {
         Debts(
             debts,
             onDebtClick,
@@ -100,17 +99,20 @@ private fun Debts(
         modifier = modifier.fillMaxSize(),
         contentColor = LendyouTheme.colors.textInteractive
     ) {
+        if (debts.isEmpty()) {
+            NothingHereYet(R.string.no_debts)
+            return@LendyouSurface
+        }
         DebtsList(debts, onDebtClick, onDebtsChange, expandedIndex)
     }
 }
 
-private val DebtCardHeight = 100.dp
+val DebtCardHeight = 100.dp
 private val ExpandedDebtCardHeight = DebtCardHeight * 3
-private val DebtCardPadding = 5.dp
+val DebtCardPadding = 5.dp
 
-private val DebtCardShape = RoundedCornerShape(16.dp)
+val DebtCardShape = RoundedCornerShape(16.dp)
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun DebtsList(
     debts: List<Debt>,
@@ -134,7 +136,6 @@ fun DebtsList(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun DebtItem(
     debt: Debt,
@@ -179,7 +180,7 @@ private fun DebtHeader(debt: Debt, isExpanded: Boolean) {
         ) {
             DebtCircle(DebtCardHeight, debt)
             SumOfDebt(debt)
-            LenderAndDebtor(debt)
+            LenderAndDebtor(debt.debtInfo)
         }
 
         if (!isExpanded)
@@ -251,7 +252,7 @@ fun Payments(payments: List<Payment>) {
 @Composable
 fun PaymentItem(payment: Payment) {
     Row {
-        EndColumn {
+        EndRow {
             val paymentText = stringResource(id = R.string.payment_item)
                 .replace("%sum", "${payment.sum}")
                 .replace("%account", "${payment.to}")
@@ -339,12 +340,15 @@ fun SumOfDebt(debt: Debt) {
 
 @Composable
 fun LenderAndDebtor(
-    debt: Debt,
+    debtInfo: DebtInfo,
+    horizontalArrangement: Arrangement.Horizontal = End
 ) {
     Row(
         Modifier
             .fillMaxWidth()
-            .fillMaxHeight(), horizontalArrangement = Arrangement.End) {
+            .fillMaxHeight(),
+        horizontalArrangement = horizontalArrangement
+    ) {
         HalfHalfColumn(
             modifier = Modifier.padding(vertical = 3.dp),
             horizontalAlignment = Alignment.End,
@@ -366,13 +370,13 @@ fun LenderAndDebtor(
             horizontalAlignment = Alignment.Start,
             contentTop = {
                 Text(
-                    debt.getLender().name,
+                    debtInfo.getLender().name,
                     style = MaterialTheme.typography.h6
                 )
             },
             contentBottom = {
                 Text(
-                    debt.getDebtor().name,
+                    debtInfo.getDebtor().name,
                     style = MaterialTheme.typography.h6
                 )
             }
@@ -380,11 +384,11 @@ fun LenderAndDebtor(
     }
 }
 
-private fun Debt.getDebtor() =
-    Repos.getInstance().getDebtor(debtInfo.debtorId)
+private fun DebtInfo.getDebtor() =
+    Repos.getInstance().getDebtor(debtorId)
 
-private fun Debt.getLender() =
-    Repos.getInstance().getLender(debtInfo.lenderId)
+private fun DebtInfo.getLender() =
+    Repos.getInstance().getLender(lenderId)
 
 
 // The Cards show a gradient which spans 3 cards and scrolls with parallax.

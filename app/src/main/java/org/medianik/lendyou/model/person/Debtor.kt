@@ -4,13 +4,10 @@ import org.medianik.lendyou.model.debt.Debt
 import java.io.Serializable
 import java.util.*
 
-class Debtor(id: PersonId, name: String, phone: String, passport: Passport) :
-    Person(id, name, phone, passport), Serializable {
+class Debtor(id: PersonId, name: String, email: String, passport: Passport) :
+    Person(id, name, email, passport), Serializable {
 
-    //    @Relation(
-//        parentColumn = "id",
-//        entityColumn = "debtor_id"
-//    )
+
     private val _debts = HashMap<Long, Debt>()
     val debts: Collection<Debt> by lazy { Collections.unmodifiableCollection(_debts.values) }
     private val _debtors = ArrayList<Lender>()

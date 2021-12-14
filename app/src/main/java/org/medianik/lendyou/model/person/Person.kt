@@ -4,24 +4,31 @@ import java.io.Serializable
 import java.util.*
 
 @JvmInline
-value class PersonId(val value: Long)
+value class PersonId(val value: String) : Comparable<PersonId> {
+    override fun compareTo(other: PersonId) =
+        value.compareTo(other.value)
+
+    override fun toString(): String {
+        return value
+    }
+}
 
 open class Person(
     val id: PersonId,
     val name: String,
-    val phone: String,
+    val email: String,
     val passport: Passport,
 ) : Serializable {
-    val lender: Lender by lazy { Lender(id, name, phone, passport) }
-    val debtor: Debtor by lazy { Debtor(id, name, phone, passport) }
+    val lender: Lender by lazy { Lender(id, name, email, passport) }
+    val debtor: Debtor by lazy { Debtor(id, name, email, passport) }
 
     override fun hashCode(): Int {
-        return Objects.hash(phone, passport)
+        return Objects.hash(email, passport)
     }
 
     override fun toString(): String {
         return "User[" +
-                "phone=" + phone + ", " +
+                "phone=" + email + ", " +
                 "passport=" + passport + ']'
     }
 

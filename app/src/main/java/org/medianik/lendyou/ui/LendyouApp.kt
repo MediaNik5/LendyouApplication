@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
@@ -21,6 +22,7 @@ import org.medianik.lendyou.ui.theme.LendyouTheme
 
 @Composable
 fun LendyouApp() {
+    val context = LocalContext.current as MainActivity
     ProvideWindowInsets(windowInsetsAnimationsEnabled = true) {
         LendyouTheme {
             val appState = rememberLendyouAppState()
@@ -28,7 +30,12 @@ fun LendyouApp() {
                 bottomBar = {
                     if (appState.shouldShowBottomBar) {
                         LendyouBottomBar(
-                            tabs = appState.bottomBarTabs,
+                            tabs = appState.bottomBarTabs.filter {
+                                filterForDebtorLender(
+                                    it,
+                                    context
+                                )
+                            },
                             currentRoute = appState.currentRoute!!,
                             navigateToRoute = appState::navigateToBottomBarRoute/*{ }*/
                         )
@@ -52,7 +59,8 @@ fun LendyouApp() {
                         onDebtSelected = appState::navigateToDebtDetail,
                         onNewDebtRequested = appState::navigateToNewDebt,
                         onPendingDebtsRequested = appState::navigateToPendingDebts,
-                        upPress = appState::upPress
+                        onNewPersonRequested = appState::navigateToNewPerson,
+                        navigateBack = appState::navigateBack
                     )
                 }
             }
@@ -60,19 +68,32 @@ fun LendyouApp() {
     }
 }
 
+fun filterForDebtorLender(section: HomeSections, context: MainActivity): Boolean {
+    return if (context.getSetting("debtorLender") == "lender")
+        section != HomeSections.LENDERS
+    else section != HomeSections.DEBTORS
+}
+
+
 private fun NavGraphBuilder.lendyouNavGraph(
     onDebtSelected: (Long, NavBackStackEntry) -> Unit,
     onNewDebtRequested: (NavBackStackEntry) -> Unit,
+    onNewPersonRequested: (NavBackStackEntry) -> Unit,
     onPendingDebtsRequested: (NavBackStackEntry) -> Unit,
-    upPress: () -> Unit
+    navigateBack: () -> Unit
 ) {
     navigation(
         route = MainDestinations.HOME_ROUTE,
         startDestination = HomeSections.DEBTS.route
     ) {
-        addHomeGraph(onDebtSelected, onNewDebtRequested)
+        addHomeGraph(
+            onDebtSelected,
+            onNewDebtRequested,
+            onNewPersonRequested,
+            onPendingDebtsRequested
+        )
     }
-    adddDebtScreenGraph(onPendingDebtsRequested)
+    adddDebtScreenGraph(onPendingDebtsRequested, navigateBack)
 //    composable(
 //        "${MainDestinations.DEBT_DETAIL_ROUTE}/{${MainDestinations.DEBT_ID_KEY}}",
 //        arguments = listOf(navArgument(MainDestinations.DEBT_ID_KEY) { type = NavType.LongType })

@@ -1,97 +1,136 @@
 package org.medianik.lendyou.ui
 
-import android.content.*
+import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.core.view.WindowCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.FirebaseDatabase
+import org.medianik.lendyou.R
 import org.medianik.lendyou.model.Repos
-import org.medianik.lendyou.ui.auth.AuthUser
-import org.medianik.lendyou.util.ServerConnection
+import org.medianik.lendyou.util.ServerDatabase
 import org.medianik.lendyou.util.sql.LendyouDatabase
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var preferences: SharedPreferences
-    private lateinit var serverConnection: ServerConnection
+    private lateinit var googleSingInClient: GoogleSignInClient
+    private lateinit var firebaseAuth: FirebaseAuth
 
-    private lateinit var isAuthNeeded: MutableState<Boolean>
-    private var firebaseToken: String? = null
+    private lateinit var serverDatabase: ServerDatabase
+    private lateinit var lendyouDatabase: LendyouDatabase
+
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_LendyouApplication)
         super.onCreate(savedInstanceState)
-        preferences = getPreferences(MODE_PRIVATE)
-        serverConnection = ServerConnection(this)
-        initializeBroadcaster()
-        Repos.initRepo(LendyouDatabase(this))
+        firebaseAuth = FirebaseAuth.getInstance()
 
         WindowCompat.setDecorFitsSystemWindows(this.window, true)
-        setContent {
-            HandleAuthParameters()
+        SignIn()
+    }
 
-            if (isAuthNeeded.value) {
-                AuthUser(firebaseToken!!, serverConnection)
-            } else {
-                LendyouApp()
+
+    fun getSetting(id: String, defaultValue: String? = null): String? {
+        return sharedPreferences.getString(id, defaultValue)
+    }
+
+    fun setSetting(id: String, value: String) {
+        sharedPreferences.edit().putString(id, value).apply()
+    }
+
+    private fun updateUi() {
+        sharedPreferences = getSharedPreferences("Lendyou", MODE_PRIVATE)
+        serverDatabase = ServerDatabase(
+            FirebaseDatabase.getInstance(getString(R.string.server_database)),
+            firebaseAuth.currentUser!!.uid
+        )
+        lendyouDatabase = LendyouDatabase(this)
+        Repos.initRepo(
+            lendyouDatabase,
+            serverDatabase,
+            firebaseAuth,
+            sharedPreferences.getString("debtorLender", "lender") == "lender"
+        )
+        setContent {
+            LendyouApp()
+        }
+    }
+
+    private fun SignIn() {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .requestIdToken(getString(R.string.default_firebase_client_id))
+            .build()
+        googleSingInClient = GoogleSignIn.getClient(this, gso)
+
+        val acc: GoogleSignInAccount? = GoogleSignIn.getLastSignedInAccount(this)
+        if (acc == null) {
+            val signInIntent = googleSingInClient.signInIntent
+            startActivityForResult(signInIntent, RC_SIGN_IN)
+        } else {
+            firebaseAuthWithGoogle(acc.idToken!!)
+            updateUi()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == RC_SIGN_IN) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            try {
+                val account = task.getResult(ApiException::class.java)!!
+                Log.d("Lendyou", "firebaseAuthWithGoogle: ${account.id}")
+                firebaseAuthWithGoogle(account.idToken!!)
+            } catch (e: ApiException) {
+                Log.e("Lendyou", "Google sign in failed", e)
             }
         }
     }
 
-    @Composable
-    private fun HandleAuthParameters() {
-        isAuthNeeded = remember { mutableStateOf(preferences.getBoolean(isAuthNeededKey, false)) }
-        firebaseToken = preferences.getString(firebaseKey, null)
+    private fun firebaseAuthWithGoogle(idToken: String) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        firebaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    Log.d("Lendyou", "Successful sign in!")
+                    val user = firebaseAuth.currentUser
+                    if (user != null)
+                        updateUi()
+                } else {
+                    Log.w("Lendyou", "singInWithCredential:failure", task.exception)
+                }
+            }
+    }
 
-        if (isAuthNeeded.value) {
-            val edit = preferences.edit()
-
-            edit.putBoolean(isAuthNeededKey, true)
-            edit.putString(firebaseKey, firebaseToken)
-
-            edit.apply()
-        } else {
-            firebaseToken = null
-            val edit = preferences.edit()
-
-            edit.putBoolean(isAuthNeededKey, false)
-            edit.putString(firebaseKey, null)
-
-            edit.apply()
+    fun signOut() {
+        FirebaseAuth.getInstance().signOut()
+        lendyouDatabase.close()
+        deleteDatabase(LendyouDatabase.DATABASE_NAME)
+        googleSingInClient.signOut().addOnSuccessListener {
+            finishAffinity()
+        }.addOnFailureListener {
+            Log.e("Lendyou", "Exception happened while signing out of account", it)
         }
     }
 
-    private val firebaseTokenChanged: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            val edit = preferences.edit()
-            firebaseToken = intent!!.getStringExtra(firebaseKey)
-            isAuthNeeded.value = true
-            edit.putBoolean(isAuthNeededKey, true)
-            edit.putString(firebaseKey, firebaseToken)
-            edit.apply()
-        }
+    override fun toString(): String {
+        return "MainActivity()"
     }
 
-    private val auth = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            isAuthNeeded.value = false
-            preferences.edit()
-                .putBoolean(isAuthNeededKey, false)
-                .apply()
-        }
-    }
-
-    private fun initializeBroadcaster() {
-        LocalBroadcastManager.getInstance(this)
-            .registerReceiver(firebaseTokenChanged, IntentFilter(firebaseKey))
-        LocalBroadcastManager.getInstance(this).registerReceiver(auth, IntentFilter(successfulAuth))
-    }
 
     companion object {
+        private const val RC_SIGN_IN = 100
         const val isAuthNeededKey = "isAuthNeeded"
         const val successfulAuth = "auth"
         const val firebaseKey = "firebaseToken"

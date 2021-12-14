@@ -35,4 +35,16 @@
     <string name="bad_server">Извините, сервер сейчас не отвечает.</string>
     <string name="telegram_login">Сейчас вы будете перенаправлены в телеграм. Мы получим вашу общую информацию: никнейм, имя, telegram-id. Нажимая на кнопку, вы соглашаетесь передать нам эти данные</string>
     <string name="telegram_login_button">Войти</string>
+    <string name="request_debt_success_to_server">Запрос на долг успешно отправлен</string>
+    <string name="request_debt_failure_to_server">Запрос на долг не удалось отправить</string>
+    <string name="home_payments">Платежи</string>
+    <string name="no_debtors">У вас ещё нет должников</string>
+    <string name="no_debts">Вы ещё никому не одалживали</string>
+    <string name="debt_created">Долг создан</string>
+    <string name="debt_not_created">Во время создания долга произошла ошибка</string>
+    <string name="no_pending_debts">У вас нет заявок на долги</string>
+    <string name="button_accept">Принять</string>
+    <string name="button_decline">Отказать</string>
+    <string name="pending_debt_declined">Заявка в долг отклонена</string>
+    <string name="pending_debt_not_declined">Произошла ошибка во время отклонения заявки</string>
 </resources>

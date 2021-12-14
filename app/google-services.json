@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "138880592265",
+    "firebase_url": "https://lendyou-1635091667347-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "lendyou-1635091667347",
     "storage_bucket": "lendyou-1635091667347.appspot.com"
   },
@@ -14,7 +15,23 @@
       },
       "oauth_client": [
         {
-          "client_id": "138880592265-bet8922iqp9o3se04iilne3s5tgk6see.apps.googleusercontent.com",
+          "client_id": "138880592265-6kufh5vo22dtjr3oiipcstuiakni7mif.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.medianik.lendyou",
+            "certificate_hash": "31913ccf9d91dc17219ae942cf3427d30ced7e60"
+          }
+        },
+        {
+          "client_id": "138880592265-gleh3jcmc9jilnks4d069nuc4ebq2at0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.medianik.lendyou",
+            "certificate_hash": "0f2a7a4b192a1127c6994dc0f358f293ee2f3d97"
+          }
+        },
+        {
+          "client_id": "138880592265-q4ntikafo3dm57bfqa0dapbac6rqfduu.apps.googleusercontent.com",
           "client_type": 3
         }
       ],

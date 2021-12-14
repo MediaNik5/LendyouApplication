@@ -14,14 +14,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import org.medianik.lendyou.R
 import org.medianik.lendyou.model.Repos
-import org.medianik.lendyou.model.SnackbarManager
-import org.medianik.lendyou.model.bank.Account
 import org.medianik.lendyou.model.debt.DebtInfo
 import org.medianik.lendyou.model.person.Lender
-import org.medianik.lendyou.model.person.PersonId
 import org.medianik.lendyou.ui.component.*
 import org.medianik.lendyou.ui.theme.LendyouTheme
 import java.time.LocalDateTime
@@ -32,13 +30,14 @@ private val FabPadding = 10.dp
 
 @Composable
 fun NewDebtScreen(
+    navigateBack: () -> Unit,
     onPendingDebtsRequested: () -> Unit,
 ) {
     val lenders = remember {
         Repos.getInstance().getLenders()
     }
     Box {
-        NewDebt(lenders)
+        NewDebt(navigateBack, lenders)
         PendingDebtsButton(onPendingDebtsRequested)
     }
 }
@@ -48,6 +47,7 @@ private val TextPadding = PaddingValues(horizontal = 100.dp, vertical = 8.dp)
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NewDebt(
+    navigateBack: () -> Unit,
     lenders: List<Lender>,
     modifier: Modifier = Modifier
 ) {
@@ -59,6 +59,8 @@ fun NewDebt(
                 .padding(12.dp)
                 .padding(top = 100.dp)
         ) {
+            val context = LocalContext.current
+
             val inputSum = remember { mutableStateOf("1000") }
             val selectedLender = remember { mutableStateOf(-1) }
             NumberField(Modifier.fillMaxWidth(), inputSum) { Text("Sum") }
@@ -70,17 +72,15 @@ fun NewDebt(
                 value = { this.name /*Lender's name*/ }
             )
             ConfirmButton(selectedLender.value) {
-                Repos.getInstance().createDebt(
+                Repos.getInstance().askForDebt(
                     DebtInfo(
                         inputSum.value.toBigDecimal(),
                         lenders[selectedLender.value].id,
-                        PersonId(1),
+                        Repos.getInstance().thisPerson(),
                         LocalDateTime.now(ZoneOffset.UTC)
-                    ),
-                    Account("RinaNumber"),
-                    Account(lenders[selectedLender.value].name)
+                    )
                 )
-                SnackbarManager.showMessage(R.string.debt_requested)
+                navigateBack()
             }
         }
     }

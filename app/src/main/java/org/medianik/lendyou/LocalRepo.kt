@@ -1,23 +1,35 @@
 package org.medianik.lendyou
 
+import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
 import org.medianik.lendyou.model.Repo
+import org.medianik.lendyou.model.SnackbarManager
 import org.medianik.lendyou.model.bank.Account
 import org.medianik.lendyou.model.debt.Debt
 import org.medianik.lendyou.model.debt.DebtId
 import org.medianik.lendyou.model.debt.DebtInfo
+import org.medianik.lendyou.model.debt.SortingOrder
 import org.medianik.lendyou.model.person.*
+import org.medianik.lendyou.util.ServerDatabase
 import org.medianik.lendyou.util.sql.LendyouDatabase
 import java.math.BigDecimal
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
+import java.util.concurrent.CopyOnWriteArrayList
 
-class LocalRepo(private val database: LendyouDatabase) : Repo {
+class LocalRepo(
+    private val database: LendyouDatabase,
+    private val serverDatabase: ServerDatabase,
+    private val isLender: Boolean,
+    auth: FirebaseAuth,
+) : Repo {
 
     override fun thisPerson() = thisId
 
-    private val thisId = PersonId(1)
+    private val thisId = PersonId(auth.currentUser!!.uid)
+    private val pendingDebts: CopyOnWriteArrayList<DebtInfo> = CopyOnWriteArrayList()
     private val debts: MutableMap<DebtId, Debt> = ConcurrentHashMap()
     private val persons: MutableMap<PersonId, Person> = ConcurrentHashMap()
     private val subscribers: Deque<() -> Unit> = ConcurrentLinkedDeque()
@@ -25,25 +37,12 @@ class LocalRepo(private val database: LendyouDatabase) : Repo {
     init {
         database.addPerson(
             Person(
-                PersonId(0),
-                "Rina",
-                "+79876543210",
-                Passport(
-                    "100-200",
-                    "Irina",
-                    "Nikitina",
-                    "Nikitina"
-                )
-            )
-        )
-        database.addPerson(
-            Person(
-                PersonId(1),
-                "Nikita",
-                "+79876543212",
+                thisId,
+                auth.currentUser!!.displayName!!,
+                auth.currentUser!!.email!!,
                 Passport(
                     "400-100",
-                    "Nikita",
+                    auth.currentUser!!.displayName!!,
                     "Nikitin",
                     "Nikitin"
                 )
@@ -55,6 +54,7 @@ class LocalRepo(private val database: LendyouDatabase) : Repo {
         for (debt in database.allDebts()) {
             debts.addDebt(debt)
         }
+        pendingDebts.addAll(database.pendingDebts())
     }
 
     override fun getDebt(debtId: DebtId, forceUpdate: Boolean): Debt? {
@@ -81,33 +81,68 @@ class LocalRepo(private val database: LendyouDatabase) : Repo {
         return persons.values.map { it.lender }
     }
 
-    override fun createDebt(debtInfo: DebtInfo, from: Account, to: Account, period: Duration): Debt {
-        if(thisId == debtInfo.lenderId){
+    override fun createDebt(
+        debtInfo: DebtInfo,
+        from: Account,
+        to: Account,
+        period: Duration
+    ): Debt {
+        if (isLender) {
             return createDebtAsLender(debtInfo, from, to, period).also { subscribers.update() }
         }
-        if(thisId == debtInfo.debtorId){
-            return createDebtAsDebtor(debtInfo, from, to, period).also { subscribers.update() }
+        throw IllegalArgumentException("You have to be lender to create debts")
+    }
+
+    override fun declineDebt(debtInfo: DebtInfo) {
+        if (isLender) {
+            serverDatabase.declineDebt(debtInfo).addOnSuccessListener {
+                database.removePendingDebt(debtInfo)
+                pendingDebts.remove(debtInfo)
+                subscribers.update()
+                SnackbarManager.showMessage(R.string.pending_debt_declined)
+            }.addOnFailureListener { exception ->
+                SnackbarManager.showMessage(R.string.pending_debt_not_declined)
+                Log.e(
+                    "Lendyou",
+                    "Exception happened while updating database(declining debt)",
+                    exception
+                )
+            }
+        } else {
+            pendingDebts.remove(debtInfo)
+            subscribers.update()
+            SnackbarManager.showMessage(R.string.pending_debt_declined)
         }
-        throw IllegalArgumentException("Newly created debt must have this user either as debtor or lender")
+        throw IllegalStateException("Cannot delete pending debt as debtor")
     }
 
     // Unchecked
-    private fun createDebtAsLender(debtInfo: DebtInfo, from: Account, to: Account, period: Duration): Debt {
+    private fun createDebtAsLender(
+        debtInfo: DebtInfo,
+        from: Account,
+        to: Account,
+        period: Duration
+    ): Debt {
+        if (!pendingDebts.contains(debtInfo))
+            throw IllegalStateException("DebtInfo $debtInfo is not in pending debts, cannot create debt")
+
         val newDebt = Debt(
             debtInfo,
             from,
             to,
             period
         )
-        debts[newDebt.id] = newDebt
-        database.addDebt(newDebt)
+        serverDatabase.addDebt(newDebt).addOnSuccessListener {
+            debts[newDebt.id] = newDebt
+            database.addDebt(newDebt)
+            pendingDebts.remove(debtInfo)
+            subscribers.update()
+            SnackbarManager.showMessage(R.string.debt_created)
+        }.addOnFailureListener { exception ->
+            SnackbarManager.showMessage(R.string.debt_not_created)
+            Log.e("Lendyou", "Exception happened while updating database(creating debt)", exception)
+        }
         return newDebt
-    }
-
-    private fun createDebtAsDebtor(debtInfo: DebtInfo, from: Account, to: Account, period: Duration): Debt {
-        // Now it repeats the lender implementations because we have no real end users
-        // there is only this user
-        return createDebtAsLender(debtInfo, from, to, period)
     }
 
     override fun payDebt(debt: Debt, sum: BigDecimal): Boolean {
@@ -137,16 +172,24 @@ class LocalRepo(private val database: LendyouDatabase) : Repo {
         TODO("Not yet implemented")
     }
 
-//    override fun getPendingOperations(): Collection<Operation<*>> {
-//        TODO("Not yet implemented")
-//    }
-//
-//    override fun getCompletedOperations(): Collection<Operation<*>> {
-//        TODO("Not yet implemented")
-//    }
+    override fun addPendingDebt(debtInfo: DebtInfo) {
+        pendingDebts.add(debtInfo)
+        database.addPendingDebt(debtInfo)
+        subscribers.update()
+        Log.d("Lendyou", "New debtInfo came here: $debtInfo")
+    }
 
-    override fun nextUniqueId(): Long {
-        return debts.size.toLong()
+    override fun getPendingDebts(sortingOrder: SortingOrder?): List<DebtInfo> {
+        when (sortingOrder) {
+            SortingOrder.DateTime -> pendingDebts.sortBy { it.dateTime }
+            SortingOrder.Sum -> pendingDebts.sortBy { it.sum }
+            SortingOrder.Lender -> pendingDebts.sortBy { it.lenderId }
+            SortingOrder.Debtor -> pendingDebts.sortBy { it.debtorId }
+        }
+        return if (isLender) {
+            pendingDebts.filter { it.lenderId == thisId }
+        } else
+            pendingDebts.filter { it.debtorId == thisId }
     }
 
     override fun getLender(lenderId: PersonId): Lender {
@@ -163,6 +206,17 @@ class LocalRepo(private val database: LendyouDatabase) : Repo {
         subscribers.add(function)
     }
 
+    override fun askForDebt(debtInfo: DebtInfo) {
+        serverDatabase.askForDebt(debtInfo).addOnSuccessListener {
+            SnackbarManager.showMessage(R.string.request_debt_success_to_server)
+            subscribers.update()
+        }.addOnFailureListener { exception ->
+            SnackbarManager.showMessage(R.string.request_debt_failure_to_server)
+            Log.e("Lendyou", "Exception happened while updating database", exception)
+        }
+    }
+
+
     private fun isDebtAdded(id: DebtId): Boolean =
         debts.contains(id)
 
@@ -171,46 +225,9 @@ class LocalRepo(private val database: LendyouDatabase) : Repo {
             func()
     }
 
-//    inner class NewDebtOperation(
-//        debt: Debt,
-//    ) : Operation<NewDebtOperationInfo>(
-//        id = nextUniqueId(),
-//        info = NewDebtOperationInfo(debt),
-//        messagePending = R.string.new_debt_pending,
-//        messageOnSuccess = R.string.new_debt_complete,
-//        messageOnFailure = R.string.new_debt_failure,
-//        date = LocalDateTime.now(),
-//        expirationDate = LocalDateTime.now().plusMinutes(1)
-//    ){
-//        override val result: Boolean?
-//            get() {
-//                if (_result != null) return _result!!
-//                if(LocalDateTime.now() > expirationDate){
-//                    _result = false
-//                    return false
-//                }
-//                if(isDebtAdded(info.debt.id)) {
-//                    _result = true
-//                    return true
-//                }
-//                return null
-//            }
-//    }
-//
-//    inner class PaidDebtOperation(
-//        debt: Debt
-//    ): Operation<PaidDebtOperationInfo>(
-//        id = nextUniqueId(),
-//        info = PaidDebtOperationInfo(debt),
-//        messagePending = R.string.paid_debt_pending,
-//        messageOnSuccess = R.string.paid_debt_complete,
-//        messageOnFailure = R.string.paid_debt_failure,
-//    ) {
-//        override val result: Boolean? = null
-//    }
+    private fun MutableMap<DebtId, Debt>.addDebt(debt: Debt): Debt {
+        put(debt.id, debt)
+        return debt
+    }
 }
 
-private fun MutableMap<DebtId, Debt>.addDebt(debt: Debt): Debt {
-    put(debt.id, debt)
-    return debt
-}

@@ -1,6 +1,5 @@
 package org.medianik.lendyou.ui.auth;
 
-import android.content.Intent;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -8,13 +7,16 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.google.gson.Gson;
 
-import org.medianik.lendyou.ui.MainActivity;
+import org.medianik.lendyou.model.Repos;
+import org.medianik.lendyou.model.debt.DebtInfo;
 
 import java.util.Map;
 import java.util.Objects;
 
 public class MessagingService extends FirebaseMessagingService {
+    private static final Gson gson = new Gson();
     private LocalBroadcastManager broadcaster;
 
     @Override
@@ -25,9 +27,7 @@ public class MessagingService extends FirebaseMessagingService {
 
     @Override
     public void onNewToken(@NonNull String token) {
-        final var intent = new Intent(MainActivity.firebaseKey);
-        intent.putExtra(MainActivity.firebaseKey, token);
-        broadcaster.sendBroadcast(intent);
+        Log.d("Lendyou", "FIREBASE TOKEN: " + token);
     }
 
     @Override
@@ -36,19 +36,21 @@ public class MessagingService extends FirebaseMessagingService {
 
         Log.d("Lendyou", "From: " + remoteMessage.getFrom());
 
-        if (!remoteMessage.getData().isEmpty()) {
-            Log.d("Lendyou", "Message data payload: " + remoteMessage.getData());
-        }
-
         final var messageInfo = MessageInfo.of(remoteMessage.getData());
-        if (messageInfo.type == MessageInfo.Type.Auth && messageInfo.contents.equals("success")) {
-            broadcaster.sendBroadcast(new Intent(MainActivity.successfulAuth));
+        if (messageInfo.type == MessageInfo.Type.NewDebt) {
+            final String debtInfo = messageInfo.contents;
+            Repos.getInstance().addPendingDebt(DebtInfo.of(debtInfo));
+        } else if (messageInfo.type == MessageInfo.Type.DeclineDebt) {
+            final String debtInfo = messageInfo.contents;
+            Repos.getInstance().declineDebt(DebtInfo.of(debtInfo));
         }
 
         RemoteMessage.Notification notification = remoteMessage.getNotification();
-        if (notification != null)
+        if (notification != null) {
             Log.d("Lendyou", "Message notification body: " + notification.getBody());
+        }
     }
+
 
     public static class MessageInfo {
         private final Type type;
@@ -73,6 +75,7 @@ public class MessagingService extends FirebaseMessagingService {
             return contents;
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "MessageInfo{" +
@@ -95,7 +98,9 @@ public class MessagingService extends FirebaseMessagingService {
         }
 
         public enum Type {
-            Auth
+            Noop,
+            NewDebt,
+            DeclineDebt,
         }
     }
 }

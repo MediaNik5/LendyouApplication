@@ -6,8 +6,8 @@ import org.medianik.lendyou.model.debt.DebtInfo
 import java.io.Serializable
 import java.util.*
 
-class Lender(id: PersonId, name: String, phone: String, passport: Passport) :
-    Person(id, name, phone, passport), Serializable {
+class Lender(id: PersonId, name: String, email: String, passport: Passport) :
+    Person(id, name, email, passport), Serializable {
 
     private val _debts = HashMap<Long, Debt>()
     val debts: Collection<Debt> by lazy { Collections.unmodifiableCollection(_debts.values) }

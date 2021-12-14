@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -39,30 +40,41 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.google.accompanist.insets.navigationBarsPadding
 import org.medianik.lendyou.R
+import org.medianik.lendyou.ui.MainActivity
 import org.medianik.lendyou.ui.component.LendyouSurface
 import org.medianik.lendyou.ui.theme.LendyouTheme
 
 fun NavGraphBuilder.addHomeGraph(
     onDebtSelected: (Long, NavBackStackEntry) -> Unit,
     onNewDebtRequested: (NavBackStackEntry) -> Unit,
+    onNewPersonRequested: (NavBackStackEntry) -> Unit,
+    onPendingDebtsRequested: (NavBackStackEntry) -> Unit,
     modifier: Modifier = Modifier
 ) {
     composable(HomeSections.DEBTS.route) { from ->
-//        Prototype(featureName = R.string.home_debts)
+        val context = LocalContext.current as MainActivity
         Debts(
             onDebtClick = { id -> onDebtSelected(id.id, from) },
-            onNewDebtRequested = { onNewDebtRequested(from) },
+            onNewDebtRequested = {
+                if (context.getSetting("debtorLender") == "lender")
+                    onPendingDebtsRequested(from)
+                else
+                    onNewDebtRequested(from)
+            },
             modifier
         )
     }
     composable(HomeSections.DEBTORS.route) { from ->
-        Debtors()
+        Debtors { onNewPersonRequested(from) }
     }
     composable(HomeSections.LENDERS.route) { from ->
         Prototype(featureName = R.string.home_lenders)
     }
+    composable(HomeSections.PAYMENTS.route) {
+        Prototype(featureName = R.string.payments)
+    }
     composable(HomeSections.PROFILE.route) {
-        Prototype(featureName = R.string.home_profile)
+        Profile()
     }
 }
 
@@ -71,10 +83,10 @@ enum class HomeSections(
     val icon: ImageVector,
     val route: String
 ) {
-//    FEED(R.string.home_feed, Icons.Outlined.Home, "home/feed"),
     DEBTS(R.string.home_debts, Icons.Outlined.Payments, "home/debts"),
     DEBTORS(R.string.home_debtors, Icons.Outlined.CallReceived, "home/debtors"),
     LENDERS(R.string.home_lenders, Icons.Outlined.CallMade, "home/lenders"),
+    PAYMENTS(R.string.home_payments, Icons.Outlined.Payments, "home/payments"),
     PROFILE(R.string.home_profile, Icons.Outlined.AccountCircle, "home/profile");
 
     private var titleWidth: Int? = null
@@ -91,7 +103,7 @@ enum class HomeSections(
 
 @Composable
 fun LendyouBottomBar(
-    tabs: Array<HomeSections>,
+    tabs: List<HomeSections>,
     currentRoute: String,
     navigateToRoute: (String) -> Unit,
     color: Color = LendyouTheme.colors.iconPrimary,
@@ -111,7 +123,8 @@ fun LendyouBottomBar(
         )
 
         LendyouBottomNavLayout(
-            selectedIndex = currentSelection.ordinal,
+            tabs = tabs,
+            selectedIndex = tabs.indexOf(currentSelection),
             itemCount = routes.size,
             indicator = { LendyouBottomNavIndicator() },
             animSpec = springSpec,
@@ -180,6 +193,7 @@ private val BottomNavigationItemPadding = Modifier.padding(horizontal = 14.dp, v
 
 @Composable
 private fun LendyouBottomNavLayout(
+    tabs: List<HomeSections>,
     selectedIndex: Int,
     itemCount: Int,
     animSpec: AnimationSpec<Float>,
@@ -190,7 +204,7 @@ private fun LendyouBottomNavLayout(
     val selectionFractions = selectionAnimationForThisFrame(itemCount, selectedIndex, animSpec)
     val indicatorIndex = indicatorAnimationForThisFrame(selectedIndex, animSpec)
 
-    val textWidth = HomeSections.values()[selectedIndex].titleWidth()
+    val textWidth = tabs[selectedIndex].titleWidth()
     Layout(
         modifier = modifier.height(BottomNavHeight),
         content = {
@@ -449,7 +463,7 @@ private fun MeasureScope.placeTextAndIcon(
 private fun JetsnackBottomNavPreview() {
     LendyouTheme {
         LendyouBottomBar(
-            tabs = HomeSections.values(),
+            tabs = HomeSections.values().toList(),
             currentRoute = "home/feed",
             navigateToRoute = { }
         )

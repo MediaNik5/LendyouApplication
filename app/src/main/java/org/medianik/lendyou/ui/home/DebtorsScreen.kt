@@ -8,12 +8,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
@@ -21,11 +25,14 @@ import org.medianik.lendyou.R
 import org.medianik.lendyou.model.Repos
 import org.medianik.lendyou.model.person.Debtor
 import org.medianik.lendyou.ui.component.LendyouCard
+import org.medianik.lendyou.ui.component.LendyouFloatingActionButton
 import org.medianik.lendyou.ui.component.LendyouSurface
+import org.medianik.lendyou.ui.component.NothingHereYet
 
 @Composable
 fun Debtors(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNewDebtorRequested: () -> Unit,
 ) {
     var changes: Int by rememberSaveable { mutableStateOf(0) }
     val onChange: () -> Unit = { changes++ }
@@ -33,11 +40,21 @@ fun Debtors(
     val debtors = rememberSaveable(changes) {
         Repos.getInstance().getDebtors()
     }
-    Debtors(
-        debtors,
-        onChange,
-        modifier
-    )
+    Box {
+        Debtors(
+            debtors,
+            onChange,
+            modifier
+        )
+        LendyouFloatingActionButton(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(10.dp),
+            onClick = onNewDebtorRequested
+        ) {
+            Icon(imageVector = Icons.Outlined.Add, contentDescription = "")
+        }
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -51,6 +68,7 @@ fun Debtors(
         Box {
             val selectedIndex = rememberSaveable { mutableStateOf(-1) }
             DebtorsList(debtors, onChange, selectedIndex)
+
         }
     }
 }
@@ -63,6 +81,8 @@ fun DebtorsList(
     modifier: Modifier = Modifier
 ) {
     Column(modifier.verticalScroll(rememberScrollState())) {
+        if (debtors.isEmpty())
+            NothingHereYet(R.string.no_debtors)
         for (index in debtors.indices) {
             key(debtors[index].id) {
                 DebtorItem(
@@ -76,7 +96,8 @@ fun DebtorsList(
     }
 }
 
-private val DebtorCardPadding = 5.dp
+
+private val DebtorCardPadding = 6.dp
 private val DebtorCardHeight = 100.dp
 private val DebtorCardShape = RoundedCornerShape(16.dp)
 
@@ -102,7 +123,11 @@ fun DebtorItem(
                 modifier = Modifier.fillMaxHeight(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                DebtorImage(debtor)
+                UserImage(
+                    Modifier
+                        .size(DebtorCardHeight - DebtorCardPadding)
+                        .padding(DebtorCardPadding / 2)
+                )
                 Text(text = debtor.name, modifier = Modifier.padding(8.dp))
             }
             Row(
@@ -122,17 +147,27 @@ fun DebtorItem(
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun DebtorImage(debtor: Debtor) {
-    LendyouSurface(shape = CircleShape, elevation = 3.dp) {
+fun UserImage(
+    modifier: Modifier = Modifier,
+    data: Any = R.drawable.placeholder,
+    imageDescription: String = "Image"
+) {
+    LendyouSurface(
+        shape = CircleShape,
+        elevation = 3.dp,
+        modifier = modifier
+    ) {
         Image(
             painter = rememberImagePainter(
-                data = R.drawable.placeholder,
+                data = data,
                 builder = {
                     crossfade(true)
                     placeholder(drawableResId = R.drawable.placeholder)
                 }
             ),
-            contentDescription = "Content"
+            modifier = Modifier.fillMaxSize(),
+            contentDescription = imageDescription,
+            contentScale = ContentScale.Crop
         )
     }
 }

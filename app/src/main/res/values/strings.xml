@@ -34,4 +34,18 @@
     <string name="bad_server">Sorry, server is not responding right now.</string>
     <string name="telegram_login">You will be asked to authenticate through telegram bot. It will receive your common user info: username, name, telegram-id. Pressing the button means you agree to pass us this data.</string>
     <string name="telegram_login_button">Login</string>
+    <string name="default_firebase_client_id" translatable="false">138880592265-q4ntikafo3dm57bfqa0dapbac6rqfduu.apps.googleusercontent.com</string>
+    <string name="request_debt_success_to_server">Debt request was successfully sent</string>
+    <string name="request_debt_failure_to_server">Debt request wasn\'t successfully sent to server</string>
+    <string name="home_payments">Payments</string>
+    <string name="no_debtors">You have no debtors yet</string>
+    <string name="no_debts">You have no debts yet</string>
+    <string name="debt_created">Debt was created</string>
+    <string name="debt_not_created">Error occured while creating debt</string>
+    <string name="server_database" translatable="false">https://lendyou-1635091667347-default-rtdb.europe-west1.firebasedatabase.app</string>
+    <string name="no_pending_debts">You have no pending debts</string>
+    <string name="button_accept">Accept</string>
+    <string name="button_decline">Decline</string>
+    <string name="pending_debt_declined">Pending debt was declined</string>
+    <string name="pending_debt_not_declined">Error occured while decliying debt</string>
 </resources>

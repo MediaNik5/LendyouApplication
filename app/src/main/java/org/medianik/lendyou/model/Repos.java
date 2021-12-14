@@ -1,6 +1,9 @@
 package org.medianik.lendyou.model;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import org.medianik.lendyou.LocalRepo;
+import org.medianik.lendyou.util.ServerDatabase;
 import org.medianik.lendyou.util.sql.LendyouDatabase;
 
 public class Repos {
@@ -15,7 +18,7 @@ public class Repos {
         return repo;
     }
 
-    public static void initRepo(LendyouDatabase database) {
-        repo = new LocalRepo(database);
+    public static void initRepo(LendyouDatabase database, ServerDatabase storage, FirebaseAuth auth, boolean isLender) {
+        repo = new LocalRepo(database, storage, isLender, auth);
     }
 }

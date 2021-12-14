@@ -8,11 +8,11 @@ import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
 
 @Composable
-fun EndColumn(
+fun EndRow(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
-)
-= Layout(
+) = Layout(
+    modifier = modifier,
     content = content,
     measurePolicy = { measurables, constraints ->
         val placeables = measurables.map {

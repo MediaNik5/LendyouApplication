@@ -27,7 +27,6 @@ fun AnimatedCircle(
     val currentState = rememberSaveable(
         saver = mutableTransitionStateSaver(),
         init = {
-
             MutableTransitionState(AnimatedCircleProgress.START)
                 .apply { targetState = AnimatedCircleProgress.END }
         }
@@ -91,12 +90,46 @@ fun AnimatedCircle(
     })
 }
 
-private fun mutableTransitionStateSaver() = Saver<MutableTransitionState<AnimatedCircleProgress>, AnimatedCircleProgress>(
-    save = { state -> state.currentState },
-    restore = { value ->
-        MutableTransitionState(value)
-            .apply { targetState = AnimatedCircleProgress.END }
-    }
-)
+private fun mutableTransitionStateSaver() =
+    Saver<MutableTransitionState<AnimatedCircleProgress>, AnimatedCircleProgress>(
+        save = { state -> state.currentState },
+        restore = { value ->
+            MutableTransitionState(value)
+                .apply { targetState = AnimatedCircleProgress.END }
+        }
+    )
 
 private enum class AnimatedCircleProgress { START, END }
+
+@Composable
+fun SegmentedCircle(
+    angleOffset: Float,
+    proportions: List<Float>,
+    colors: List<Color>,
+    modifier: Modifier
+) {
+    val stroke = with(LocalDensity.current) { Stroke(5.dp.toPx()) }
+    Canvas(modifier = modifier, onDraw = {
+        val innerRadius = (size.minDimension - stroke.width) / 2
+        val halfSize = size / 2f
+        val topLeft = Offset(
+            halfSize.width - innerRadius,
+            halfSize.height - innerRadius
+        )
+        val size = Size(2 * innerRadius, 2 * innerRadius)
+        var startAngle = -60f
+        proportions.forEachIndexed { index, proportion ->
+            val currentAngle = proportion * angleOffset
+            drawArc(
+                color = colors[index],
+                startAngle = startAngle + DividerLengthInDegrees / 2f,
+                sweepAngle = currentAngle - DividerLengthInDegrees,
+                topLeft = topLeft,
+                size = size,
+                useCenter = false,
+                style = stroke
+            )
+            startAngle += currentAngle
+        }
+    })
+}

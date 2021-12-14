@@ -1,5 +1,14 @@
 package org.medianik.lendyou.util.sql
 
+internal object DebtInfoEntry {
+    const val TABLE_NAME = "debt_info"
+
+    const val COLUMN_SUM = "sum"
+    const val COLUMN_LENDER = "lender_id"
+    const val COLUMN_DEBTOR = "debtor_id"
+    const val COLUMN_DATE_TIME = "date_time"
+}
+
 internal object DebtEntry {
     const val TABLE_NAME = "debt"
 
@@ -29,7 +38,7 @@ internal object PersonEntry {
 
     const val COLUMN_ID = "id"
     const val COLUMN_NAME = "name"
-    const val COLUMN_PHONE = "phone"
+    const val COLUMN_EMAIL = "email"
 }
 
 internal object PassportEntry {

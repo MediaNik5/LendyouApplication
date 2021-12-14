@@ -26,8 +26,8 @@ class LendyouDatabase(context: Context?) :
         private const val SQL_CREATE_DEBT_ENTRIES = "create table " + DebtEntry.TABLE_NAME + " (" +
                 DebtEntry.COLUMN_ID + " INTEGER PRIMARY KEY, " +
                 DebtEntry.COLUMN_SUM + " TEXT, " +
-                DebtEntry.COLUMN_LENDER + " INTEGER, " +
-                DebtEntry.COLUMN_DEBTOR + " INTEGER, " +
+                DebtEntry.COLUMN_LENDER + " TEXT, " +
+                DebtEntry.COLUMN_DEBTOR + " TEXT, " +
                 DebtEntry.COLUMN_DATE_TIME + " INTEGER, " +
                 DebtEntry.COLUMN_FROM + " TEXT, " +
                 DebtEntry.COLUMN_TO + " TEXT, " +
@@ -36,6 +36,21 @@ class LendyouDatabase(context: Context?) :
             "SELECT COUNT(*) FROM " + DebtEntry.TABLE_NAME + " where id = ?"
         private const val SQL_DELETE_DEBT_ENTRIES = "DROP TABLE IF EXISTS " + DebtEntry.TABLE_NAME
         private const val SQL_GET_ALL_DEBTS = "select * from " + DebtEntry.TABLE_NAME
+
+        private const val SQL_CREATE_DEBT_INFO_ENTRIES =
+            "create table " + DebtInfoEntry.TABLE_NAME + " (" +
+                    DebtInfoEntry.COLUMN_SUM + " TEXT, " +
+                    DebtInfoEntry.COLUMN_LENDER + " TEXT, " +
+                    DebtInfoEntry.COLUMN_DEBTOR + " TEXT, " +
+                    DebtInfoEntry.COLUMN_DATE_TIME + " INTEGER)"
+        private const val SQL_DELETE_DEBT_INFO_ENTRIES =
+            "DROP TABLE IF EXISTS " + DebtInfoEntry.TABLE_NAME
+        private const val SQL_GET_ALL_DEBT_INFO = "select * from " + DebtInfoEntry.TABLE_NAME
+        private const val SQL_DELETE_DEBT_INFO_WHERE =
+            DebtInfoEntry.COLUMN_SUM + " = ? AND " +
+                    DebtInfoEntry.COLUMN_LENDER + " = ? AND " +
+                    DebtInfoEntry.COLUMN_DEBTOR + " = ? AND " +
+                    DebtInfoEntry.COLUMN_DATE_TIME + " = ?"
 
         private const val SQL_CREATE_PAYMENT_ENTRIES =
             "create table " + PaymentEntry.TABLE_NAME + " (" +
@@ -52,7 +67,7 @@ class LendyouDatabase(context: Context?) :
         private const val SQL_CREATE_PERSON_ENTRIES =
             "create table " + PersonEntry.TABLE_NAME + " (" +
                     PersonEntry.COLUMN_ID + " INTEGER, " +
-                    PersonEntry.COLUMN_PHONE + " TEXT, " +
+                    PersonEntry.COLUMN_EMAIL + " TEXT, " +
                     PersonEntry.COLUMN_NAME + " TEXT)"
         private const val SQL_DELETE_PERSON_ENTRIES =
             "DROP TABLE IF EXISTS " + PersonEntry.TABLE_NAME
@@ -81,6 +96,7 @@ class LendyouDatabase(context: Context?) :
         db.execSQL(SQL_CREATE_PAYMENT_ENTRIES)
         db.execSQL(SQL_CREATE_PERSON_ENTRIES)
         db.execSQL(SQL_CREATE_PASSPORT_ENTRIES)
+        db.execSQL(SQL_CREATE_DEBT_INFO_ENTRIES)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -88,6 +104,7 @@ class LendyouDatabase(context: Context?) :
         db.execSQL(SQL_DELETE_PAYMENT_ENTRIES)
         db.execSQL(SQL_DELETE_PERSON_ENTRIES)
         db.execSQL(SQL_DELETE_PASSPORT_ENTRIES)
+        db.execSQL(SQL_DELETE_DEBT_INFO_ENTRIES)
         onCreate(db)
     }
 
@@ -108,7 +125,7 @@ class LendyouDatabase(context: Context?) :
     }
 
     private fun personFromRow(cursor: Cursor): Person {
-        val id = PersonId(cursor.getLong(0))
+        val id = PersonId(cursor.getString(0))
         return Person(
             id,
             cursor.getString(2),
@@ -118,7 +135,7 @@ class LendyouDatabase(context: Context?) :
     }
 
     private fun getPassport(id: PersonId): Passport {
-        val cursor = database.rawQuery(SQL_GET_PASSPORT_BY_PERSON_ID, arrayOf(id.value.toString()))
+        val cursor = database.rawQuery(SQL_GET_PASSPORT_BY_PERSON_ID, arrayOf(id.value))
         cursor.use {
             if (!cursor.moveToNext())
                 throw IllegalArgumentException("Could not find passport for person with id $id")
@@ -136,7 +153,7 @@ class LendyouDatabase(context: Context?) :
 
         values.put(PersonEntry.COLUMN_ID, lender.id.value)
         values.put(PersonEntry.COLUMN_NAME, lender.name)
-        values.put(PersonEntry.COLUMN_PHONE, lender.phone)
+        values.put(PersonEntry.COLUMN_EMAIL, lender.email)
 
         addPassport(lender.passport, lender.id)
 
@@ -169,8 +186,8 @@ class LendyouDatabase(context: Context?) :
     private fun debtFromRow(cursor: Cursor) = Debt(
         DebtInfo(
             BigDecimal(cursor.getString(1)),
-            PersonId(cursor.getLong(2)),
-            PersonId(cursor.getLong(3)),
+            PersonId(cursor.getString(2)),
+            PersonId(cursor.getString(3)),
             LocalDateTime.ofEpochSecond(cursor.getLong(4), 0, ZoneOffset.UTC),
         ),
         Account(cursor.getString(5)),
@@ -179,6 +196,25 @@ class LendyouDatabase(context: Context?) :
         DebtId(cursor.getLong(0)),
         allPayments(DebtId(cursor.getLong(0))),
     )
+
+    fun pendingDebts(): List<DebtInfo> {
+        val cursor = database.rawQuery(SQL_GET_ALL_DEBT_INFO, EMPTY_ARGS)
+        cursor.use {
+            val debtInfos = ArrayList<DebtInfo>(cursor.count)
+            while (cursor.moveToNext()) {
+                debtInfos.add(debtInfoFromRow(cursor))
+            }
+            return debtInfos
+        }
+    }
+
+    private fun debtInfoFromRow(cursor: Cursor): DebtInfo =
+        DebtInfo(
+            BigDecimal(cursor.getString(0)),
+            PersonId(cursor.getString(1)),
+            PersonId(cursor.getString(2)),
+            LocalDateTime.ofEpochSecond(cursor.getLong(3), 0, ZoneOffset.UTC),
+        )
 
     fun allPayments(debtId: DebtId): MutableList<Payment> {
         val cursor = database.rawQuery(SQL_GET_ALL_PAYMENTS, arrayOf(debtId.id.toString()))
@@ -245,4 +281,29 @@ class LendyouDatabase(context: Context?) :
         values.put(PaymentEntry.COLUMN_DEBT_ID, debtId.id)
         return 1L == database.insert(PaymentEntry.TABLE_NAME, null, values)
     }
+
+    fun addPendingDebt(debtInfo: DebtInfo): Boolean {
+        val values = ContentValues(4)
+
+        values.put(DebtEntry.COLUMN_SUM, debtInfo.sum.toString())
+        values.put(DebtEntry.COLUMN_LENDER, debtInfo.lenderId.value)
+        values.put(DebtEntry.COLUMN_DEBTOR, debtInfo.debtorId.value)
+        values.put(DebtEntry.COLUMN_DATE_TIME, debtInfo.dateTime.toEpochSecond(ZoneOffset.UTC))
+
+        return database.insert(DebtInfoEntry.TABLE_NAME, null, values) == 1L
+    }
+
+    fun removePendingDebt(debtInfo: DebtInfo): Boolean {
+        return 1 == database.delete(
+            DebtInfoEntry.TABLE_NAME,
+            SQL_DELETE_DEBT_INFO_WHERE,
+            arrayOf(
+                debtInfo.sum.toString(),
+                debtInfo.lenderId.value,
+                debtInfo.debtorId.value,
+                debtInfo.dateTime.toEpochSecond(ZoneOffset.UTC).toString(),
+            )
+        )
+    }
+
 }

@@ -23,6 +23,7 @@ class Debt
     val from: Account,
     val to: Account,
     val payPeriod: Duration,
+    @JvmField
     val id: DebtId = DebtId(ThreadLocalRandom.current().nextLong(Long.MAX_VALUE)),
     private val payments: MutableList<Payment> = ArrayList()
 ) : Serializable {
