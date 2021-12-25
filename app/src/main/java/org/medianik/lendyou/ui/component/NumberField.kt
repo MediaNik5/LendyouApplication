@@ -15,11 +15,14 @@ private val numberFieldTextStyle: TextStyle by lazy { TextStyle.Default.copy(tex
 fun NumberField(
     modifier: Modifier = Modifier,
     input: MutableState<String>,
+    isInteger: Boolean = false,
     label: @Composable () -> Unit
 ) {
     TextField(
         value = input.value,
-        onValueChange = { newValue -> input.value = parseValue(newValue) },
+        onValueChange = { newValue ->
+            input.value = parseValue(newValue, isInteger)
+        },
         label = label,
         singleLine = true,
         modifier = modifier,
@@ -31,17 +34,19 @@ fun NumberField(
 
 private val lastDigits = Regex("([^.]*\\.[^.]{2}).*")
 
-private fun parseValue(newValue: String): String {
+private fun parseValue(newValue: String, isInteger: Boolean): String {
     var onlyDigitsAndDot = newValue.filter { char -> char.isDigit() || char == '.' }
     val firstDotIndex = onlyDigitsAndDot.indexOf('.')
     if (firstDotIndex != -1) {
+        if (isInteger)
+            return onlyDigitsAndDot.substring(0, firstDotIndex)
         val lastDotIndex = onlyDigitsAndDot.lastIndexOf('.')
         if (firstDotIndex != lastDotIndex)
             onlyDigitsAndDot = onlyDigitsAndDot.removeRange(lastDotIndex..lastDotIndex)
+        return onlyDigitsAndDot.removeLastDigitsAfterDotAndTwoDigits()
     }
-
-    return onlyDigitsAndDot.removeLastDigitsAfterDotAndTwoNumbers()
+    return onlyDigitsAndDot
 }
 
-private fun String.removeLastDigitsAfterDotAndTwoNumbers(): String =
+private fun String.removeLastDigitsAfterDotAndTwoDigits(): String =
     this.replace(lastDigits, "$1")

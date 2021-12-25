@@ -21,6 +21,7 @@ import org.medianik.lendyou.model.debt.DebtInfo
 import org.medianik.lendyou.model.person.Lender
 import org.medianik.lendyou.ui.component.*
 import org.medianik.lendyou.ui.theme.LendyouTheme
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -58,22 +59,38 @@ fun NewDebt(
                 .padding(top = 100.dp)
         ) {
             val inputSum = remember { mutableStateOf("1000") }
-            val selectedLender = remember { mutableStateOf(-1) }
-            NumberField(Modifier.fillMaxWidth(), inputSum) { Text("Sum") }
+            NumberField(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp),
+                inputSum
+            ) { Text("Sum") }
 
+            val inputDuration = remember { mutableStateOf("30") }
+            NumberField(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp),
+                inputDuration,
+                isInteger = true
+            ) { Text("Days between payments") }
+
+            val selectedLender = remember { mutableStateOf(-1) }
             DropdownMenuInput(
                 selectedLender,
                 items = lenders,
                 placeholder = R.string.lender_placeholder,
                 value = { this.name /*Lender's name*/ }
             )
+
             ConfirmButton(selectedLender.value) {
                 Repos.getInstance().askForDebt(
                     DebtInfo(
                         inputSum.value.toBigDecimal(),
                         lenders[selectedLender.value].id,
                         Repos.getInstance().thisPerson(),
-                        LocalDateTime.now(ZoneOffset.UTC)
+                        LocalDateTime.now(ZoneOffset.UTC),
+                        Duration.ofDays(inputDuration.value.toLong())
                     )
                 )
                 navigateBack()

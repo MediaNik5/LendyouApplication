@@ -20,7 +20,7 @@ public class DateTimeUtil {
     }
 
     public static boolean isToday(@NonNull LocalDate date) {
-        return date.toEpochDay() == DateTimeUtil.daysSinceEpoch();
+        return date.toEpochDay() == daysSinceEpoch();
     }
 
     public static final DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("hh:mm");

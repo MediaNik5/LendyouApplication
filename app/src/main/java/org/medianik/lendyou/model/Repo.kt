@@ -10,7 +10,6 @@ import org.medianik.lendyou.model.person.Lender
 import org.medianik.lendyou.model.person.Person
 import org.medianik.lendyou.model.person.PersonId
 import java.math.BigDecimal
-import java.time.Duration
 
 
 /**
@@ -41,7 +40,6 @@ interface Repo {
         debtInfo: DebtInfo,
         from: Account,
         to: Account,
-        period: Duration = Duration.ofDays(30)
     ): Debt
 
     fun addDebtAsDebtor(debt: Debt): Boolean

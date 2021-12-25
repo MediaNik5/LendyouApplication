@@ -12,7 +12,7 @@ private const val integerIndex = 0
 private const val fractionIndex = 1
 
 object TransformSum : VisualTransformation {
-    // 234,456,234.123434
+    // 234 456 234.12
     override fun filter(text: AnnotatedString): TransformedText {
         val integerAndFraction = text.text.split('.', ignoreCase = true, limit = 2)
         val (integer, mapping) = parseInteger(integerAndFraction[integerIndex])

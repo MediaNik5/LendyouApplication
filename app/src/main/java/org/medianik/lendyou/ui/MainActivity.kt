@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
         firebaseAuth = FirebaseAuth.getInstance()
 
         WindowCompat.setDecorFitsSystemWindows(this.window, true)
-        SignIn()
+        signIn()
     }
 
 
@@ -59,14 +59,14 @@ class MainActivity : ComponentActivity() {
             lendyouDatabase,
             serverDatabase,
             firebaseAuth,
-            sharedPreferences.getString("debtorLender", "lender") != "debtor"
+            sharedPreferences.getString("debtorLender", "lender") == "lender"
         )
         setContent {
             LendyouApp()
         }
     }
 
-    private fun SignIn() {
+    private fun signIn() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
             .requestIdToken(getString(R.string.default_firebase_client_id))
@@ -117,9 +117,9 @@ class MainActivity : ComponentActivity() {
         FirebaseAuth.getInstance().signOut()
         lendyouDatabase.close()
         deleteDatabase(LendyouDatabase.DATABASE_NAME)
-        googleSingInClient.signOut().addOnSuccessListener {
+        googleSingInClient.signOut().addOnSuccessListener { it: Void? ->
             finishAffinity()
-        }.addOnFailureListener {
+        }.addOnFailureListener { it: Exception ->
             Log.e("Lendyou", "Exception happened while signing out of account", it)
         }
     }

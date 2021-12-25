@@ -7,6 +7,7 @@ internal object DebtInfoEntry {
     const val COLUMN_LENDER = "lender_id"
     const val COLUMN_DEBTOR = "debtor_id"
     const val COLUMN_DATE_TIME = "date_time"
+    const val COLUMN_PAY_PERIOD = "pay_period"
 }
 
 internal object DebtEntry {

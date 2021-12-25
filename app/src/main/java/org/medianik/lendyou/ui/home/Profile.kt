@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
 import org.medianik.lendyou.R
@@ -75,9 +76,9 @@ private fun LenderDebtorChoose() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        Text("Debtor", style = MaterialTheme.typography.h6)
+        Text(stringResource(R.string.debtor), style = MaterialTheme.typography.h6)
         LenderDebtorSwitch()
-        Text("Lender", style = MaterialTheme.typography.h6)
+        Text(stringResource(R.string.lender), style = MaterialTheme.typography.h6)
     }
     Text(
         text = "App will restart",

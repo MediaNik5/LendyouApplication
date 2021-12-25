@@ -4,9 +4,7 @@ import org.medianik.lendyou.model.bank.Account
 import org.medianik.lendyou.model.bank.Payment
 import java.io.Serializable
 import java.math.BigDecimal
-import java.time.Duration
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 import java.util.concurrent.ThreadLocalRandom
 
 @JvmInline
@@ -27,7 +25,6 @@ class Debt
     val debtInfo: DebtInfo,
     val from: Account,
     val to: Account,
-    val payPeriod: Duration,
     @JvmField
     val id: DebtId = DebtId(ThreadLocalRandom.current().nextLong(Long.MAX_VALUE)),
     private val payments: MutableList<Payment> = ArrayList()
@@ -61,7 +58,7 @@ class Debt
     }
 
     override fun toString(): String {
-        return "Debt{id=${id.id}, debtInfo=$debtInfo, from=$from, to=$to, period=${payPeriod.toNanos()}}"
+        return "Debt{id=${id.id}, debtInfo=$debtInfo, from=$from, to=$to}"
     }
 
     fun addPayment(sum: BigDecimal, time: LocalDateTime = LocalDateTime.now()) {
@@ -77,7 +74,7 @@ class Debt
 
     companion object {
         private val debtRegex = Regex(
-            "Debt\\{id=(\\d+), debtInfo=(" + DebtInfo.debtInfoRegex + "), from=(\\w+), to=(\\w+), period=(\\d+)\\}"
+            "Debt\\{id=(\\d+), debtInfo=(" + DebtInfo.debtInfoRegex + "), from=(\\w+), to=(\\w+)\\}"
         )
 
         @JvmStatic
@@ -88,16 +85,15 @@ class Debt
                 return of(
                     values[1].toLong(),
                     DebtInfo.of(values[2]),
-                    Account(values[7]),
                     Account(values[8]),
-                    values[9].toLong(),
+                    Account(values[9]),
                 )
             }
             throw IllegalArgumentException("Cannot convert to Debt $string")
         }
 
-        fun of(id: Long, debtInfo: DebtInfo, from: Account, to: Account, duration: Long): Debt {
-            return Debt(debtInfo, from, to, Duration.of(duration, ChronoUnit.NANOS), DebtId(id))
+        fun of(id: Long, debtInfo: DebtInfo, from: Account, to: Account): Debt {
+            return Debt(debtInfo, from, to, DebtId(id))
         }
     }
 }

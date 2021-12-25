@@ -38,7 +38,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-fun NavGraphBuilder.adddDebtScreenGraph(
+fun NavGraphBuilder.addDebtScreenGraph(
     onPendingDebtsRequested: (NavBackStackEntry) -> Unit,
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -220,7 +220,7 @@ private fun ExpandedDebtInfo(
 @Composable
 fun AwaitingPayment(debt: Debt) {
     val lastPaymentDate = debt.lastPaymentDateOrInitial()
-    val nextPaymentDate = lastPaymentDate.toEpochDay() + debt.payPeriod.toDays()
+    val nextPaymentDate = lastPaymentDate.toEpochDay() + debt.debtInfo.payPeriod.toDays()
     if (isLaterThanToday(nextPaymentDate)) {
         Text(
             stringResource(R.string.overdue_payment)

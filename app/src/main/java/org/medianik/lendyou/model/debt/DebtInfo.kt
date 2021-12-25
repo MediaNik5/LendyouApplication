@@ -3,6 +3,7 @@ package org.medianik.lendyou.model.debt
 import org.medianik.lendyou.model.person.PersonId
 import java.io.Serializable
 import java.math.BigDecimal
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -11,6 +12,7 @@ data class DebtInfo internal constructor(
     val lenderId: PersonId,
     val debtorId: PersonId,
     val dateTime: LocalDateTime,
+    val payPeriod: Duration,
 ) : Serializable {
     val sumDouble: Double = sum.toDouble()
 
@@ -20,7 +22,8 @@ data class DebtInfo internal constructor(
                 "sum=" + sum + ", " +
                 "lenderId=" + lenderId + ", " +
                 "debtorId=" + debtorId + ", " +
-                "dateTime=" + dateTime.toEpochSecond(ZoneOffset.UTC) + '}'
+                "dateTime=" + dateTime.toEpochSecond(ZoneOffset.UTC) + ", " +
+                "payPeriod=${payPeriod.toDays()}" + '}'
     }
 
     companion object {
@@ -33,10 +36,11 @@ data class DebtInfo internal constructor(
             lenderId: PersonId,
             debtorId: PersonId,
             dateTime: LocalDateTime,
-        ) = DebtInfo(sum, lenderId, debtorId, dateTime)
+            period: Duration
+        ) = DebtInfo(sum, lenderId, debtorId, dateTime, period)
 
         val debtInfoRegex = Regex(
-            "DebtInfo\\{sum=([+-]?(?:[0-9]*[.])?[0-9]+), lenderId=(\\w+), debtorId=(\\w+), dateTime=(\\d+)\\}"
+            "DebtInfo\\{sum=([+-]?(?:[0-9]*[.])?[0-9]+), lenderId=(\\w+), debtorId=(\\w+), dateTime=(\\d+), payPeriod=(\\d+)\\}"
         )
 
         @JvmStatic
@@ -49,7 +53,8 @@ data class DebtInfo internal constructor(
                     BigDecimal(values[1]),
                     PersonId(values[2]),
                     PersonId(values[3]),
-                    LocalDateTime.ofEpochSecond(values[4].toLong(), 0, ZoneOffset.UTC)
+                    LocalDateTime.ofEpochSecond(values[4].toLong(), 0, ZoneOffset.UTC),
+                    Duration.ofDays(values[5].toLong())
                 )
             } else
                 throw IllegalArgumentException("Cannot make DebtInfo of string $string")

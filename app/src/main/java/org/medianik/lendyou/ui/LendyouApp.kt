@@ -91,5 +91,5 @@ private fun NavGraphBuilder.lendyouNavGraph(
         )
     }
     addPersonScreenGraph(navigateBack)
-    adddDebtScreenGraph(onPendingDebtsRequested, navigateBack)
+    addDebtScreenGraph(onPendingDebtsRequested, navigateBack)
 }

@@ -56,7 +56,7 @@ fun NavGraphBuilder.addHomeGraph(
         Debts(
             onDebtClick = { id -> onDebtSelected(id.id, from) },
             onNewDebtRequested = {
-                if (context.getSetting("debtorLender") == "lender")
+                if (context.getSetting("debtorLender", "lender") == "lender")
                     onPendingDebtsRequested(from)
                 else
                     onNewDebtRequested(from)

@@ -44,6 +44,7 @@ public class ServerDatabase {
         return reference.setValue(debtInfo.toString());
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     private @NonNull
     Task<Void> setFirebaseToken(String token) {
         this.firebaseToken = token;

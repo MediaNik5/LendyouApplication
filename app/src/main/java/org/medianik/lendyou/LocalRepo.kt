@@ -13,7 +13,6 @@ import org.medianik.lendyou.model.person.*
 import org.medianik.lendyou.util.ServerDatabase
 import org.medianik.lendyou.util.sql.LendyouDatabase
 import java.math.BigDecimal
-import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -107,11 +106,10 @@ class LocalRepo(
     override fun createDebt(
         debtInfo: DebtInfo,
         from: Account,
-        to: Account,
-        period: Duration
+        to: Account
     ): Debt {
         if (isLender) {
-            return createDebtAsLender(debtInfo, from, to, period).also { subscribers.update() }
+            return createDebtAsLender(debtInfo, from, to).also { subscribers.update() }
         }
         throw IllegalArgumentException("You have to be lender to create debts")
     }
@@ -127,7 +125,7 @@ class LocalRepo(
 
     override fun declineDebtAsLender(debtInfo: DebtInfo) {
         if (isLender) {
-            serverDatabase.declineDebt(debtInfo).addOnSuccessListener {
+            serverDatabase.declineDebt(debtInfo).addOnSuccessListener { it: Void? ->
                 database.removePendingDebt(debtInfo)
                 pendingDebts.remove(debtInfo)
                 subscribers.update()
@@ -157,8 +155,7 @@ class LocalRepo(
     private fun createDebtAsLender(
         debtInfo: DebtInfo,
         from: Account,
-        to: Account,
-        period: Duration
+        to: Account
     ): Debt {
         if (!pendingDebts.contains(debtInfo))
             throw IllegalStateException("DebtInfo $debtInfo is not in pending debts, cannot create debt")
@@ -167,9 +164,8 @@ class LocalRepo(
             debtInfo,
             from,
             to,
-            period
         )
-        serverDatabase.addDebt(newDebt).addOnSuccessListener {
+        serverDatabase.addDebt(newDebt).addOnSuccessListener { it: Void? ->
             debts[newDebt.id] = newDebt
             database.addDebt(newDebt)
             pendingDebts.remove(debtInfo)
@@ -246,7 +242,7 @@ class LocalRepo(
     }
 
     override fun askForDebt(debtInfo: DebtInfo) {
-        serverDatabase.askForDebt(debtInfo).addOnSuccessListener {
+        serverDatabase.askForDebt(debtInfo).addOnSuccessListener { it: Void? ->
             SnackbarManager.showMessage(R.string.request_debt_success_to_server)
             subscribers.update()
         }.addOnFailureListener { exception ->

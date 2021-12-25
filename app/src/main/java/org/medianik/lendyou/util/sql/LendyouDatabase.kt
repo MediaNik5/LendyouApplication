@@ -21,7 +21,7 @@ import java.time.ZoneOffset
 class LendyouDatabase(context: Context?) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     companion object {
-        const val DATABASE_VERSION = 2
+        const val DATABASE_VERSION = 3
         const val DATABASE_NAME = "Lendyou.db"
         private const val SQL_CREATE_DEBT_ENTRIES = "create table " + DebtEntry.TABLE_NAME + " (" +
                 DebtEntry.COLUMN_ID + " INTEGER PRIMARY KEY, " +
@@ -29,9 +29,9 @@ class LendyouDatabase(context: Context?) :
                 DebtEntry.COLUMN_LENDER + " TEXT, " +
                 DebtEntry.COLUMN_DEBTOR + " TEXT, " +
                 DebtEntry.COLUMN_DATE_TIME + " INTEGER, " +
+                DebtEntry.COLUMN_PAY_PERIOD + " INTEGER, " +
                 DebtEntry.COLUMN_FROM + " TEXT, " +
-                DebtEntry.COLUMN_TO + " TEXT, " +
-                DebtEntry.COLUMN_PAY_PERIOD + " INTEGER)"
+                DebtEntry.COLUMN_TO + " TEXT)"
         private const val SQL_CONTAINS_DEBT =
             "SELECT COUNT(*) FROM " + DebtEntry.TABLE_NAME + " where id = ?"
         private const val SQL_DELETE_DEBT_ENTRIES = "DROP TABLE IF EXISTS " + DebtEntry.TABLE_NAME
@@ -42,7 +42,8 @@ class LendyouDatabase(context: Context?) :
                     DebtInfoEntry.COLUMN_SUM + " TEXT, " +
                     DebtInfoEntry.COLUMN_LENDER + " TEXT, " +
                     DebtInfoEntry.COLUMN_DEBTOR + " TEXT, " +
-                    DebtInfoEntry.COLUMN_DATE_TIME + " INTEGER)"
+                    DebtInfoEntry.COLUMN_DATE_TIME + " INTEGER, " +
+                    DebtInfoEntry.COLUMN_PAY_PERIOD + " INTEGER)"
         private const val SQL_DELETE_DEBT_INFO_ENTRIES =
             "DROP TABLE IF EXISTS " + DebtInfoEntry.TABLE_NAME
         private const val SQL_GET_ALL_DEBT_INFO = "select * from " + DebtInfoEntry.TABLE_NAME
@@ -189,10 +190,10 @@ class LendyouDatabase(context: Context?) :
             PersonId(cursor.getString(2)),
             PersonId(cursor.getString(3)),
             LocalDateTime.ofEpochSecond(cursor.getLong(4), 0, ZoneOffset.UTC),
+            Duration.ofDays(cursor.getLong(5))
         ),
-        Account(cursor.getString(5)),
         Account(cursor.getString(6)),
-        Duration.ofNanos(cursor.getLong(7)),
+        Account(cursor.getString(7)),
         DebtId(cursor.getLong(0)),
         allPayments(DebtId(cursor.getLong(0))),
     )
@@ -214,6 +215,7 @@ class LendyouDatabase(context: Context?) :
             PersonId(cursor.getString(1)),
             PersonId(cursor.getString(2)),
             LocalDateTime.ofEpochSecond(cursor.getLong(3), 0, ZoneOffset.UTC),
+            Duration.ofDays(cursor.getLong(4)),
         )
 
     fun allPayments(debtId: DebtId): MutableList<Payment> {
@@ -252,9 +254,9 @@ class LendyouDatabase(context: Context?) :
         values.put(DebtEntry.COLUMN_LENDER, debt.debtInfo.lenderId.value)
         values.put(DebtEntry.COLUMN_DEBTOR, debt.debtInfo.debtorId.value)
         values.put(DebtEntry.COLUMN_DATE_TIME, debt.debtInfo.dateTime.toEpochSecond(ZoneOffset.UTC))
+        values.put(DebtEntry.COLUMN_PAY_PERIOD, debt.debtInfo.payPeriod.toDays())
         values.put(DebtEntry.COLUMN_FROM, debt.from.toString())
         values.put(DebtEntry.COLUMN_TO, debt.to.toString())
-        values.put(DebtEntry.COLUMN_PAY_PERIOD, debt.payPeriod.toNanos())
 
         val debtAdded = 1L == database.insert(DebtEntry.TABLE_NAME, null, values)
         val paymentsAdded = addPayments(debt.getPayments(), debt.id)
@@ -289,6 +291,7 @@ class LendyouDatabase(context: Context?) :
         values.put(DebtEntry.COLUMN_LENDER, debtInfo.lenderId.value)
         values.put(DebtEntry.COLUMN_DEBTOR, debtInfo.debtorId.value)
         values.put(DebtEntry.COLUMN_DATE_TIME, debtInfo.dateTime.toEpochSecond(ZoneOffset.UTC))
+        values.put(DebtEntry.COLUMN_PAY_PERIOD, debtInfo.payPeriod.toDays())
 
         return database.insert(DebtInfoEntry.TABLE_NAME, null, values) == 1L
     }
