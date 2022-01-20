@@ -1,5 +1,10 @@
 package org.medianik.lendyou.model.person
 
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import org.medianik.lendyou.model.Jsonable
+import org.medianik.lendyou.model.Repos
 import java.io.Serializable
 import java.util.*
 
@@ -11,6 +16,9 @@ value class PersonId(val value: String) : Comparable<PersonId> {
     override fun toString(): String {
         return value
     }
+
+    fun toDebtor(): Debtor = Repos.getInstance().getDebtor(this)
+    fun toLender(): Lender = Repos.getInstance().getLender(this)
 }
 
 open class Person(
@@ -18,7 +26,7 @@ open class Person(
     val name: String,
     val email: String,
     val passport: Passport,
-) : Serializable {
+) : Serializable, Jsonable {
     val lender: Lender by lazy { Lender(id, name, email, passport) }
     val debtor: Debtor by lazy { Debtor(id, name, email, passport) }
 
@@ -38,23 +46,24 @@ open class Person(
         return "Person(id=$id, name='$name', email=$email)"
     }
 
-    companion object {
-        private val personRegex =
-            Regex("Person\\{id=(\\w+), name='(.+)', email=(.+@\\S+)\\}$")
+    override fun toJson(): JsonElement {
+        val jsonObject = JsonObject()
+        jsonObject.addProperty("id", id.value)
+        jsonObject.addProperty("email", email)
+        jsonObject.addProperty("name", name)
+        return jsonObject
+    }
 
+    companion object {
         @JvmStatic
         fun of(person: String): Person {
-            val matcher = personRegex.find(person)
-            if (matcher != null) {
-                val values = matcher.groupValues
-                return Person(
-                    PersonId(values[1]),
-                    values[2],
-                    values[3],
-                    Passport("sdfsd", values[2], "sdfsdf", "sdfsdf")
-                )
-            }
-            throw IllegalArgumentException("Cannot convert string to person: $person")
+            val json = JsonParser.parseString(person).asJsonObject
+            return Person(
+                PersonId(json.getAsJsonPrimitive("id").asString),
+                json.getAsJsonPrimitive("name").asString,
+                json.getAsJsonPrimitive("email").asString,
+                Passport("", "", "", "")
+            )
         }
     }
 }

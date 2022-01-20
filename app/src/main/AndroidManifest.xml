@@ -25,9 +25,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        =
         <service
-            android:name="org.medianik.lendyou.ui.auth.MessagingService"
+            android:name="org.medianik.lendyou.util.MessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

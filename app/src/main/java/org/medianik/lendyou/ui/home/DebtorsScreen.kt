@@ -7,10 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,14 +67,7 @@ fun Debtors(
                 )
             }
         }
-        LendyouFloatingActionButton(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(10.dp),
-            onClick = onNewPersonRequested
-        ) {
-            Icon(imageVector = Icons.Outlined.Add, contentDescription = "")
-        }
+        LendyouFloatingActionButton(onClick = onNewPersonRequested)
     }
 }
 

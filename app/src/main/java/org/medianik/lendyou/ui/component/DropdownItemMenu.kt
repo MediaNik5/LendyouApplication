@@ -3,7 +3,10 @@ package org.medianik.lendyou.ui.component
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -25,19 +28,20 @@ fun <T> DropdownMenuInput(
     selectedIndex: MutableState<Int>,
     items: List<T>,
     @StringRes placeholder: Int,
-    value: T.() -> String
+    value: T.() -> String,
+    onClick: () -> Unit = {}
 ) {
     val expanded = remember { mutableStateOf(false) }
     Box(
         Modifier
             .fillMaxWidth()
-            .wrapContentSize(Alignment.TopEnd)
+//            .wrapContentSize(Alignment.TopEnd)
             .padding(vertical = 12.dp),
         contentAlignment = Alignment.BottomCenter
     ) {
         val index = selectedIndex.value
         ItemText(if (index != -1) items[index] else null, value, placeholder, expanded)
-        DropdownItemMenu(expanded, items, value, selectedIndex)
+        DropdownItemMenu(expanded, items, value, selectedIndex, onClick)
     }
 }
 
@@ -46,7 +50,7 @@ private fun <T> ItemText(
     item: T?,
     value: T.() -> String,
     @StringRes placeholder: Int,
-    expanded: MutableState<Boolean>
+    expanded: MutableState<Boolean>,
 ) {
     Text(
         text = item?.value() ?: stringResource(placeholder),
@@ -70,7 +74,8 @@ private fun <T> DropdownItemMenu(
     expanded: MutableState<Boolean>,
     items: List<T>,
     value: T.() -> String,
-    selectedIndex: MutableState<Int>
+    selectedIndex: MutableState<Int>,
+    onClick: () -> Unit = {}
 ) {
     Box {
         DropdownMenu(
@@ -81,11 +86,12 @@ private fun <T> DropdownItemMenu(
                 DropdownMenuItem(onClick = {
                     selectedIndex.value = index
                     expanded.value = false
+                    onClick()
                 }) {
                     Text(
                         item.value(),
                         color = LendyouTheme.colors.textSecondary,
-                        textAlign = TextAlign.End
+                        textAlign = TextAlign.Start
                     )
                 }
             }

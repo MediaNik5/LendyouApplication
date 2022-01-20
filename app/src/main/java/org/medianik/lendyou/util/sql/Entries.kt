@@ -26,11 +26,8 @@ internal object DebtEntry {
 internal object PaymentEntry {
     const val TABLE_NAME = "payment"
 
-    const val COLUMN_ID = "id"
     const val COLUMN_DATE_TIME = "date_time"
     const val COLUMN_SUM = "sum"
-    const val COLUMN_FROM = "from_account"
-    const val COLUMN_TO = "to_account"
     const val COLUMN_DEBT_ID = "debt_id"
 }
 

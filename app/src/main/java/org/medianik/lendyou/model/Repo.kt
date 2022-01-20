@@ -1,6 +1,7 @@
 package org.medianik.lendyou.model
 
 import org.medianik.lendyou.model.bank.Account
+import org.medianik.lendyou.model.bank.Payment
 import org.medianik.lendyou.model.debt.Debt
 import org.medianik.lendyou.model.debt.DebtId
 import org.medianik.lendyou.model.debt.DebtInfo
@@ -69,5 +70,7 @@ interface Repo {
     fun getDebtor(debtorId: PersonId): Debtor
     fun subscribeToChanges(function: () -> Unit)
     fun askForDebt(debtInfo: DebtInfo)
+    fun addPayment(payment: Payment)
+    fun addPaymentFromServer(payment: Payment): Boolean
 }
 

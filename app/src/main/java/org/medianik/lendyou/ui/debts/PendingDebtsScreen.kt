@@ -126,7 +126,11 @@ fun PendingDebt(debtInfo: DebtInfo, onAccept: (DebtInfo) -> Unit, onDecline: (De
     ) {
         Row(Modifier.height(DebtCardHeight), verticalAlignment = Alignment.CenterVertically) {
             SumOfPendingDebt(debtInfo)
-            LenderAndDebtor(debtInfo, Arrangement.End)
+            LenderAndDebtor(
+                Repos.getInstance().getLender(debtInfo.lenderId),
+                Repos.getInstance().getDebtor(debtInfo.debtorId),
+                Arrangement.End
+            )
         }
         Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.Center) {
             ActionButton(R.string.button_accept) { onAccept(debtInfo) }

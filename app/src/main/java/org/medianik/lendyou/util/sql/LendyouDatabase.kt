@@ -57,8 +57,6 @@ class LendyouDatabase(context: Context?) :
             "create table " + PaymentEntry.TABLE_NAME + " (" +
                     PaymentEntry.COLUMN_DATE_TIME + " INTEGER, " +
                     PaymentEntry.COLUMN_SUM + " TEXT, " +
-                    PaymentEntry.COLUMN_FROM + " TEXT, " +
-                    PaymentEntry.COLUMN_TO + " TEXT, " +
                     PaymentEntry.COLUMN_DEBT_ID + " INTEGER)"
         private const val SQL_DELETE_PAYMENT_ENTRIES =
             "DROP TABLE IF EXISTS " + PaymentEntry.TABLE_NAME
@@ -227,8 +225,7 @@ class LendyouDatabase(context: Context?) :
                     Payment(
                         LocalDateTime.ofEpochSecond(cursor.getLong(0), 0, ZoneOffset.UTC),
                         BigDecimal(cursor.getString(1)),
-                        Account(cursor.getString(2)),
-                        Account(cursor.getString(3))
+                        cursor.getLong(2)
                     )
                 )
             }
@@ -259,28 +256,26 @@ class LendyouDatabase(context: Context?) :
         values.put(DebtEntry.COLUMN_TO, debt.to.toString())
 
         val debtAdded = 1L == database.insert(DebtEntry.TABLE_NAME, null, values)
-        val paymentsAdded = addPayments(debt.getPayments(), debt.id)
+        val paymentsAdded = addPayments(debt.getPayments())
         return debtAdded && paymentsAdded
     }
 
-    private fun addPayments(payments: List<Payment>, debtId: DebtId): Boolean {
+    private fun addPayments(payments: List<Payment>): Boolean {
         if (payments.isEmpty())
             return true
         var added = true
         for (payment in payments) {
-            added = added && addPayment(payment, debtId)
+            added = added && addPayment(payment)
         }
         return added
     }
 
-    private fun addPayment(payment: Payment, debtId: DebtId): Boolean {
-        val values = ContentValues(4)
+    fun addPayment(payment: Payment): Boolean {
+        val values = ContentValues(3)
 
         values.put(PaymentEntry.COLUMN_DATE_TIME, payment.dateTime.toEpochSecond(ZoneOffset.UTC))
-        values.put(PaymentEntry.COLUMN_FROM, payment.from.toString())
-        values.put(PaymentEntry.COLUMN_TO, payment.to.toString())
         values.put(PaymentEntry.COLUMN_SUM, payment.sum.toString())
-        values.put(PaymentEntry.COLUMN_DEBT_ID, debtId.id)
+        values.put(PaymentEntry.COLUMN_DEBT_ID, payment.debtId)
         return 1L == database.insert(PaymentEntry.TABLE_NAME, null, values)
     }
 

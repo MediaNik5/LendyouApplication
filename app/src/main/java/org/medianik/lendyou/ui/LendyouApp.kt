@@ -57,6 +57,7 @@ fun LendyouApp() {
                         onNewDebtRequested = appState::navigateToNewDebt,
                         onPendingDebtsRequested = appState::navigateToPendingDebts,
                         onNewPersonRequested = appState::navigateToNewPerson,
+                        onNewPaymentRequested = appState::navigateToNewPayment,
                         navigateBack = appState::navigateBack
                     )
                 }
@@ -66,7 +67,7 @@ fun LendyouApp() {
 }
 
 fun filterForDebtorLender(section: HomeSections, context: MainActivity): Boolean {
-    return if (context.getSetting("debtorLender") == "lender")
+    return if (context.getSetting("debtorLender", "lender") == "lender")
         section != HomeSections.LENDERS
     else section != HomeSections.DEBTORS
 }
@@ -77,6 +78,7 @@ private fun NavGraphBuilder.lendyouNavGraph(
     onNewDebtRequested: (NavBackStackEntry) -> Unit,
     onNewPersonRequested: (NavBackStackEntry) -> Unit,
     onPendingDebtsRequested: (NavBackStackEntry) -> Unit,
+    onNewPaymentRequested: (NavBackStackEntry) -> Unit,
     navigateBack: () -> Unit
 ) {
     navigation(
@@ -87,9 +89,11 @@ private fun NavGraphBuilder.lendyouNavGraph(
             onDebtSelected,
             onNewDebtRequested,
             onNewPersonRequested,
-            onPendingDebtsRequested
+            onPendingDebtsRequested,
+            onNewPaymentRequested
         )
     }
+    addPaymentScreenGraph(navigateBack)
     addPersonScreenGraph(navigateBack)
     addDebtScreenGraph(onPendingDebtsRequested, navigateBack)
 }

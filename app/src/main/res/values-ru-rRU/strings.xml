@@ -51,4 +51,12 @@
     <string name="add_new_person">Человек добавлен!</string>
     <string name="no_lenders">У вас ещё нет кредиторов</string>
     <string name="sum_of_debts">Сумма долгов: %s</string>
+    <string name="payment_period_days">Дней между платежами</string>
+    <string name="zero_value">Нельзя занять ничего</string>
+    <string name="is_offline">Оффлайн?</string>
+    <string name="are_you_sure">Вы уверены?</string>
+    <string name="cancel">Отменить</string>
+    <string name="debt">Долг</string>
+    <string name="no_auth">Не смогли залогинить вас. Перезапустите приложение и попробуйте снова</string>
+    <string name="payment_added">Был добавлен платёж</string>
 </resources>

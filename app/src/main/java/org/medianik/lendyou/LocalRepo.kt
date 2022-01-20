@@ -4,7 +4,9 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import org.medianik.lendyou.model.Repo
 import org.medianik.lendyou.model.SnackbarManager
+import org.medianik.lendyou.model.SnackbarManager.showMessage
 import org.medianik.lendyou.model.bank.Account
+import org.medianik.lendyou.model.bank.Payment
 import org.medianik.lendyou.model.debt.Debt
 import org.medianik.lendyou.model.debt.DebtId
 import org.medianik.lendyou.model.debt.DebtInfo
@@ -17,7 +19,12 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.ThreadLocalRandom
 
+
+/**
+ * Local android implementation, that uses maps to store temp data and calls for sqliteDatabase for storing permanent data of Repo
+ */
 class LocalRepo(
     private val database: LendyouDatabase,
     private val serverDatabase: ServerDatabase,
@@ -37,6 +44,11 @@ class LocalRepo(
         ConcurrentHashMap<DebtId, Debt>().also {
             database.allDebts().forEach { debt ->
                 it.addDebt(debt)
+                if (debt.left != BigDecimal.ZERO && ThreadLocalRandom.current().nextBoolean()) {
+                    debt.addPayment(
+                        ThreadLocalRandom.current().nextInt(debt.leftDouble.toInt()).toBigDecimal()
+                    )
+                }
             }
         }
     }
@@ -81,6 +93,7 @@ class LocalRepo(
     override fun addPerson(person: Person): Boolean {
         val added = null == persons.putIfAbsent(person.id, person)
         if (added) {
+            showMessage(R.string.add_new_person)
             database.addPerson(person)
             subscribers.update()
         }
@@ -249,6 +262,19 @@ class LocalRepo(
             SnackbarManager.showMessage(R.string.request_debt_failure_to_server)
             Log.e("Lendyou", "Exception happened while updating database", exception)
         }
+    }
+
+    override fun addPayment(payment: Payment) {
+        serverDatabase.addPayment(payment)
+    }
+
+    override fun addPaymentFromServer(payment: Payment): Boolean {
+        val added = debts[DebtId(payment.debtId)]!!.addPayment(payment)
+        if (added) {
+            database.addPayment(payment)
+            showMessage(R.string.payment_added)
+        }
+        return added
     }
 
 

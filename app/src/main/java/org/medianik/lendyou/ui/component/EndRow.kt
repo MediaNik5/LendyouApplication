@@ -19,11 +19,11 @@ fun EndRow(
             it.measure(constraints)
         }
         val height = placeables.maxOfOrNull { it.height } ?: 0
-        placeEndColumn(constraints, height, placeables)
+        placeEndRow(constraints, height, placeables)
     }
 )
 
-private fun MeasureScope.placeEndColumn(
+private fun MeasureScope.placeEndRow(
     constraints: Constraints,
     height: Int,
     placeables: List<Placeable>

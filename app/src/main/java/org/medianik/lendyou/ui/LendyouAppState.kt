@@ -23,6 +23,7 @@ import org.medianik.lendyou.ui.home.HomeSections
  * Destinations used in the [JetsnackApp].
  */
 object MainDestinations {
+    const val NEW_PAYMENT_ROUT = "new_payment"
     const val HOME_ROUTE = "home"
     const val DEBT_DETAIL_ROUTE = "debt"
     const val DEBT_ID_KEY = "debtId"
@@ -130,6 +131,12 @@ class LendyouAppState(
     fun navigateToNewPerson(from: NavBackStackEntry) {
         if (from.lifecycleIsResumed()) {
             navController.navigate(MainDestinations.NEW_PERSON_ROUT)
+        }
+    }
+
+    fun navigateToNewPayment(from: NavBackStackEntry) {
+        if (from.lifecycleIsResumed()) {
+            navController.navigate(MainDestinations.NEW_PAYMENT_ROUT)
         }
     }
 

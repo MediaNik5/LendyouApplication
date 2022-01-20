@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
 import org.medianik.lendyou.R
 import org.medianik.lendyou.ui.MainActivity
+import org.medianik.lendyou.ui.component.DropdownMenuInput
 import org.medianik.lendyou.ui.component.EndRow
 import org.medianik.lendyou.ui.component.LendyouCard
 import org.medianik.lendyou.ui.component.LendyouSurface
@@ -66,7 +67,36 @@ private fun Settings(modifier: Modifier = Modifier) {
     ) {
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             LenderDebtorChoose()
+            LanguageChoose()
         }
+    }
+}
+
+@Composable
+fun LanguageChoose() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        val locales = listOf("ru", "en")
+        val languages = listOf("Russian", "English")
+        val context = LocalContext.current as MainActivity
+        val selectedIndex = remember {
+            mutableStateOf(
+                locales.indexOf(context.getSetting("locale", "en"))
+            )
+        }
+        DropdownMenuInput(
+            selectedIndex,
+            items = languages,
+            placeholder = R.string.cancel,
+            value = { this },
+            onClick = {
+                context.setSetting("locale", locales[selectedIndex.value])
+                context.recreate()
+            }
+        )
     }
 }
 

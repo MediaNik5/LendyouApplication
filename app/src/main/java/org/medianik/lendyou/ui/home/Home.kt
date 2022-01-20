@@ -49,6 +49,7 @@ fun NavGraphBuilder.addHomeGraph(
     onNewDebtRequested: (NavBackStackEntry) -> Unit,
     onNewPersonRequested: (NavBackStackEntry) -> Unit,
     onPendingDebtsRequested: (NavBackStackEntry) -> Unit,
+    onNewPaymentRequested: (NavBackStackEntry) -> Unit,
     modifier: Modifier = Modifier
 ) {
     composable(HomeSections.DEBTS.route) { from ->
@@ -70,8 +71,8 @@ fun NavGraphBuilder.addHomeGraph(
     composable(HomeSections.LENDERS.route) { from ->
         Lenders { onNewPersonRequested(from) }
     }
-    composable(HomeSections.PAYMENTS.route) {
-        Prototype(featureName = R.string.payments)
+    composable(HomeSections.PAYMENTS.route) { from ->
+        Payments { onNewPaymentRequested(from) }
     }
     composable(HomeSections.PROFILE.route) {
         Profile()

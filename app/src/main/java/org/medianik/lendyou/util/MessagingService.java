@@ -1,4 +1,4 @@
-package org.medianik.lendyou.ui.auth;
+package org.medianik.lendyou.util;
 
 import android.util.Log;
 
@@ -9,15 +9,15 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.google.gson.Gson;
 
-import org.medianik.lendyou.R;
 import org.medianik.lendyou.model.Repos;
-import org.medianik.lendyou.model.SnackbarManager;
+import org.medianik.lendyou.model.bank.Payment;
 import org.medianik.lendyou.model.debt.Debt;
 import org.medianik.lendyou.model.debt.DebtInfo;
 import org.medianik.lendyou.model.person.Person;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class MessagingService extends FirebaseMessagingService {
     private static final Gson gson = new Gson();
@@ -41,25 +41,9 @@ public class MessagingService extends FirebaseMessagingService {
         Log.d("Lendyou", "From: " + remoteMessage.getFrom());
 
         final var messageInfo = MessageInfo.of(remoteMessage.getData());
+        messageInfo.onReceive();
 
-        if (messageInfo.type == MessageInfo.Type.NewDebtRequest) {
-            final String debtInfo = messageInfo.contents;
-            Repos.getInstance().addPendingDebt(DebtInfo.of(debtInfo));
-        } else if (messageInfo.type == MessageInfo.Type.DeclineDebt) {
-            final String debtInfo = messageInfo.contents;
-            Repos.getInstance().declineDebtAsDebtor(DebtInfo.of(debtInfo));
-        } else if (messageInfo.type == MessageInfo.Type.NewDebt) {
-            final String debt = messageInfo.contents;
-            Repos.getInstance().addDebtAsDebtor(Debt.of(debt));
-        } else if (messageInfo.type == MessageInfo.Type.NewPerson) {
-            final String person = messageInfo.contents;
-            boolean added = Repos.getInstance().addPerson(Person.of(person));
-            if (added) {
-                SnackbarManager.INSTANCE.showMessage(R.string.add_new_person);
-            }
-        }
-
-        RemoteMessage.Notification notification = remoteMessage.getNotification();
+        final var notification = remoteMessage.getNotification();
         if (notification != null) {
             Log.d("Lendyou", "Message notification body: " + notification.getBody());
         }
@@ -79,6 +63,10 @@ public class MessagingService extends FirebaseMessagingService {
             final var type = map.get("type");
             final var contents = map.get("contents");
             return new MessageInfo(type == null ? null : Type.valueOf(type), contents);
+        }
+
+        public void onReceive() {
+            type.onReceive(contents);
         }
 
         public Type getType() {
@@ -112,11 +100,23 @@ public class MessagingService extends FirebaseMessagingService {
         }
 
         public enum Type {
-            Noop,
-            NewDebt,
-            NewDebtRequest,
-            DeclineDebt,
-            NewPerson,
+            Noop((__) -> {
+            }),
+            NewDebt(debt -> Repos.getInstance().addDebtAsDebtor(Debt.of(debt))),
+            NewDebtRequest(debtInfo -> Repos.getInstance().addPendingDebt(DebtInfo.of(debtInfo))),
+            DeclineDebt(debtInfo -> Repos.getInstance().declineDebtAsDebtor(DebtInfo.of(debtInfo))),
+            NewPerson(person -> Repos.getInstance().addPerson(Person.of(person))),
+            NewPayment(payment -> Repos.getInstance().addPaymentFromServer(Payment.of(payment)));
+
+            private final Consumer<String> onReceive;
+
+            Type(Consumer<String> onReceive) {
+                this.onReceive = onReceive;
+            }
+
+            public void onReceive(String contents) {
+                onReceive.accept(contents);
+            }
         }
     }
 }

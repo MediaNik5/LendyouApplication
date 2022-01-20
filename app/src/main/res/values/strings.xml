@@ -53,4 +53,12 @@
     <string name="add_new_person">Person was added!</string>
     <string name="no_lenders">You have no lenders yet</string>
     <string name="sum_of_debts">Sum of debts: %s</string>
+    <string name="payment_period_days">Days between payments</string>
+    <string name="is_offline">Is offline?</string>
+    <string name="zero_value">You cannot lend nothing</string>
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="cancel">Cancel</string>
+    <string name="debt">Debt</string>
+    <string name="no_auth">Could not auth you. Relaunch app and try again</string>
+    <string name="payment_added">Payment was added</string>
 </resources>

@@ -9,7 +9,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +26,8 @@ import org.medianik.lendyou.R
 import org.medianik.lendyou.model.Repos
 import org.medianik.lendyou.model.bank.Payment
 import org.medianik.lendyou.model.debt.*
+import org.medianik.lendyou.model.person.Debtor
+import org.medianik.lendyou.model.person.Lender
 import org.medianik.lendyou.ui.MainDestinations
 import org.medianik.lendyou.ui.component.*
 import org.medianik.lendyou.ui.debts.NewDebtScreen
@@ -69,22 +71,24 @@ fun Debts(
         Debts(
             debts,
             onDebtClick,
-            modifier,
+            Modifier,
             onChange,
         )
+        LendyouFloatingActionButton(onClick = onNewDebtRequested)
         LendyouFloatingActionButton(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(10.dp),
-            onClick = onNewDebtRequested
+                .align(Alignment.BottomStart)
+                .padding(horizontal = 10.dp, vertical = 40.dp),
+            onClick = { }
         ) {
             Icon(
-                imageVector = Icons.Outlined.Add,
+                imageVector = Icons.Outlined.FilterList,
                 contentDescription = ""
             )
         }
     }
 }
+
 
 @Composable
 private fun Debts(
@@ -116,10 +120,12 @@ fun DebtsList(
     expandedIndex: MutableState<Int>,
     modifier: Modifier = Modifier,
 ) {
+
     Column {
         if (debts.isEmpty()) {
             NothingHereYet(R.string.no_debts)
         } else {
+
             for (index in debts.indices) {
                 key(debts[index].id) {
                     DebtItem(
@@ -179,7 +185,7 @@ private fun DebtHeader(debt: Debt, isExpanded: Boolean) {
         ) {
             DebtCircle(DebtCardHeight, debt)
             SumOfDebt(debt)
-            LenderAndDebtor(debt.debtInfo)
+            LenderAndDebtor(debt.debtInfo.getLender(), debt.debtInfo.getDebtor())
         }
 
         if (!isExpanded)
@@ -253,8 +259,8 @@ fun PaymentItem(payment: Payment) {
     Row {
         EndRow {
             val paymentText = stringResource(id = R.string.payment_item)
-                .replace("%sum", "${payment.sum}")
-                .replace("%account", "${payment.to}")
+                .replace("%sum", payment.sum.toString())
+                .replace("%account", DebtId(payment.debtId).toDebt()!!.debtInfo.getLender().name)
             Text(paymentText)
 
             val dateTime = payment.dateTime.toLocalTime().format(dateTimeFormat)
@@ -340,13 +346,13 @@ fun SumOfDebt(debt: Debt) {
 
 @Composable
 fun LenderAndDebtor(
-    debtInfo: DebtInfo,
+    lender: Lender,
+    debtor: Debtor,
     horizontalArrangement: Arrangement.Horizontal = End
 ) {
     Row(
         Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
+            .fillMaxSize(),
         horizontalArrangement = horizontalArrangement
     ) {
         HalfHalfColumn(
@@ -370,13 +376,13 @@ fun LenderAndDebtor(
             horizontalAlignment = Alignment.Start,
             contentTop = {
                 Text(
-                    debtInfo.getLender().name,
+                    lender.name,
                     style = MaterialTheme.typography.h6
                 )
             },
             contentBottom = {
                 Text(
-                    debtInfo.getDebtor().name,
+                    debtor.name,
                     style = MaterialTheme.typography.h6
                 )
             }

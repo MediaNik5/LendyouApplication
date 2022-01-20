@@ -1,7 +1,7 @@
 package org.medianik.lendyou.ui.component
 
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.TextField
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
@@ -18,7 +18,7 @@ fun NumberField(
     isInteger: Boolean = false,
     label: @Composable () -> Unit
 ) {
-    TextField(
+    OutlinedTextField(
         value = input.value,
         onValueChange = { newValue ->
             input.value = parseValue(newValue, isInteger)

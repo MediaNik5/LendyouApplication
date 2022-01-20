@@ -1,5 +1,9 @@
 package org.medianik.lendyou.model.debt
 
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import org.medianik.lendyou.model.Jsonable
+import org.medianik.lendyou.model.Repos
 import org.medianik.lendyou.model.bank.Account
 import org.medianik.lendyou.model.bank.Payment
 import java.io.Serializable
@@ -11,6 +15,10 @@ import java.util.concurrent.ThreadLocalRandom
 value class DebtId(val id: Long) {
     override fun toString(): String {
         return id.toString()
+    }
+
+    fun toDebt(): Debt? {
+        return Repos.getInstance().getDebt(this)
     }
 }
 
@@ -28,7 +36,7 @@ class Debt
     @JvmField
     val id: DebtId = DebtId(ThreadLocalRandom.current().nextLong(Long.MAX_VALUE)),
     private val payments: MutableList<Payment> = ArrayList()
-) : Serializable {
+) : Serializable, Jsonable {
     private val status = DebtStatus.NOT_PAID
     fun status(): DebtStatus {
         return status
@@ -48,7 +56,7 @@ class Debt
     val leftDouble: Double
         get(){
             var current = debtInfo.sumDouble
-            for(payment in payments)
+            for (payment in payments)
                 current -= payment.sumDouble
             return current
         }
@@ -58,13 +66,36 @@ class Debt
     }
 
     override fun toString(): String {
-        return "Debt{id=${id.id}, debtInfo=$debtInfo, from=$from, to=$to}"
+        return toJson().toString()
+    }
+
+    override fun toJson(): JsonElement {
+        val jsonObject = JsonObject()
+        jsonObject.addProperty("id", id.id)
+        jsonObject.add("debtInfo", debtInfo.toJson())
+        jsonObject.addProperty("from", from.toString())
+        jsonObject.addProperty("to", to.toString())
+        return jsonObject
     }
 
     fun addPayment(sum: BigDecimal, time: LocalDateTime = LocalDateTime.now()) {
         if (sum > left)
             throw UnsupportedOperationException("Cannot pay more than you owe.")
-        payments.add(Payment(time, sum, from, to))
+        payments.add(
+            Payment(
+                time,
+                sum,
+                id.id
+            )
+        )
+    }
+
+    fun addPayment(payment: Payment): Boolean {
+        if (!payments.contains(payment)) {
+            payments.add(payment)
+            return true
+        }
+        return false
     }
 
     val isLatePayment: Boolean

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
@@ -15,10 +16,16 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.medianik.lendyou.R
 import org.medianik.lendyou.model.Repos
+import org.medianik.lendyou.util.MyFirebaseDatabase
 import org.medianik.lendyou.util.ServerDatabase
 import org.medianik.lendyou.util.sql.LendyouDatabase
+import java.util.*
 
 class MainActivity : ComponentActivity() {
 
@@ -33,15 +40,25 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Theme_LendyouApplication)
         super.onCreate(savedInstanceState)
+        sharedPreferences = getSharedPreferences("Lendyou", MODE_PRIVATE)
         firebaseAuth = FirebaseAuth.getInstance()
 
         WindowCompat.setDecorFitsSystemWindows(this.window, true)
         signIn()
     }
 
+    override fun onResume() {
+        super.onResume()
+        val locale = Locale(getSetting("locale", "en"))
+        Locale.setDefault(locale)
+        val configuration = resources.configuration
+        configuration.setLocale(locale)
+        resources.updateConfiguration(configuration, resources.displayMetrics)
+    }
 
-    fun getSetting(id: String, defaultValue: String? = null): String? {
-        return sharedPreferences.getString(id, defaultValue)
+
+    fun getSetting(id: String, defaultValue: String): String {
+        return sharedPreferences.getString(id, defaultValue)!!
     }
 
     fun setSetting(id: String, value: String) {
@@ -49,8 +66,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun updateUi() {
-        sharedPreferences = getSharedPreferences("Lendyou", MODE_PRIVATE)
-        serverDatabase = ServerDatabase(
+        serverDatabase = MyFirebaseDatabase(
             FirebaseDatabase.getInstance(getString(R.string.server_database)),
             firebaseAuth.currentUser!!.uid
         )
@@ -94,6 +110,11 @@ class MainActivity : ComponentActivity() {
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
                 Log.e("Lendyou", "Google sign in failed", e)
+                Toast.makeText(this, R.string.no_auth, Toast.LENGTH_LONG).show()
+                CoroutineScope(Dispatchers.Main).launch {
+                    delay(3000L)
+                    signOut()
+                }
             }
         }
     }
@@ -109,6 +130,11 @@ class MainActivity : ComponentActivity() {
                         updateUi()
                 } else {
                     Log.w("Lendyou", "singInWithCredential:failure", task.exception)
+                    Toast.makeText(this, R.string.no_auth, Toast.LENGTH_LONG).show()
+                    CoroutineScope(Dispatchers.Main).launch {
+                        delay(1500L)
+                        signOut()
+                    }
                 }
             }
     }
