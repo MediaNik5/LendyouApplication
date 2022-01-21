@@ -49,7 +49,7 @@ fun NavGraphBuilder.addDebtScreenGraph(
         NewDebtScreen(navigateBack) { onPendingDebtsRequested(from) }
     }
     composable(MainDestinations.PENDING_DEBTS_ROUT) { from ->
-        PendingDebts()
+        PendingDebts(navigateBack)
     }
 }
 

@@ -21,6 +21,10 @@ value class PersonId(val value: String) : Comparable<PersonId> {
     fun toLender(): Lender = Repos.getInstance().getLender(this)
 }
 
+fun String.toPersonId(): PersonId {
+    return PersonId(this)
+}
+
 open class Person(
     val id: PersonId,
     val name: String,

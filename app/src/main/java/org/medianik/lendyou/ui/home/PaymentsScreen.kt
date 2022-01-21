@@ -161,20 +161,29 @@ fun NewPayment(navigateBack: () -> Unit) {
                 { "${this.debtInfo.lenderId.toLender().name}, on ${dateFormat(this.debtInfo.dateTime)}, sum ${this.debtInfo.sum}" }
             )
             val context = LocalContext.current
-            ConfirmButton(selectedDebt.value) {
-                val sum = inputSum.value.toBigDecimal()
-                if (sum.compareTo(BigDecimal.ZERO) == 0) {
-                    Toast.makeText(context, R.string.zero_value, Toast.LENGTH_LONG).show()
-                    return@ConfirmButton
-                }
-                Repos.getInstance().addPayment(
-                    Payment(
-                        LocalDateTime.now(),
-                        sum,
-                        debts[selectedDebt.value].id.id
+            if (selectedDebt.value != -1) {
+                val debt = debts[selectedDebt.value]
+                val left = debt.left
+                val sumMoreThanLeft =
+                    stringResource(R.string.payment_more_left).replace("%s", left.toString())
+                ConfirmButton(selectedDebt.value) {
+                    val sum = inputSum.value.toBigDecimal()
+                    if (sum.compareTo(BigDecimal.ZERO) == 0) {
+                        Toast.makeText(context, R.string.zero_value, Toast.LENGTH_LONG).show()
+                        return@ConfirmButton
+                    }
+                    if (sum > left) {
+                        Toast.makeText(context, sumMoreThanLeft, Toast.LENGTH_LONG).show()
+                    }
+                    Repos.getInstance().addPayment(
+                        Payment(
+                            LocalDateTime.now(),
+                            sum,
+                            debt.id.id
+                        )
                     )
-                )
-                navigateBack()
+                    navigateBack()
+                }
             }
         }
     }

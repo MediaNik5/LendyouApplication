@@ -2,6 +2,7 @@ package org.medianik.lendyou.model.debt
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import org.medianik.lendyou.model.Jsonable
 import org.medianik.lendyou.model.Repos
 import org.medianik.lendyou.model.bank.Account
@@ -104,23 +105,16 @@ class Debt
         }
 
     companion object {
-        private val debtRegex = Regex(
-            "Debt\\{id=(\\d+), debtInfo=(" + DebtInfo.debtInfoRegex + "), from=(\\w+), to=(\\w+)\\}"
-        )
 
         @JvmStatic
         fun of(string: String): Debt {
-            val matcher = debtRegex.find(string)
-            if (matcher != null) {
-                val values = matcher.groupValues
-                return of(
-                    values[1].toLong(),
-                    DebtInfo.of(values[2]),
-                    Account(values[8]),
-                    Account(values[9]),
-                )
-            }
-            throw IllegalArgumentException("Cannot convert to Debt $string")
+            val json = JsonParser.parseString(string).asJsonObject
+            return of(
+                json.getAsJsonPrimitive("id").asLong,
+                DebtInfo.of(json.getAsJsonObject("debtInfo")),
+                Account(json.getAsJsonPrimitive("from").asString),
+                Account(json.getAsJsonPrimitive("to").asString)
+            )
         }
 
         fun of(id: Long, debtInfo: DebtInfo, from: Account, to: Account): Debt {

@@ -61,4 +61,7 @@
     <string name="debt">Debt</string>
     <string name="no_auth">Could not auth you. Relaunch app and try again</string>
     <string name="payment_added">Payment was added</string>
+    <string name="debt_sent_agreement">Debt was agreed</string>
+    <string name="payment_error">Could not create payment</string>
+    <string name="payment_more_left">You cannot pay more than you owe: %s</string>
 </resources>

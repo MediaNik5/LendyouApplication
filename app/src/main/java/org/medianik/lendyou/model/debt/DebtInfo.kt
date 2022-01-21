@@ -2,8 +2,10 @@ package org.medianik.lendyou.model.debt
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import org.medianik.lendyou.model.Jsonable
 import org.medianik.lendyou.model.person.PersonId
+import org.medianik.lendyou.model.person.toPersonId
 import java.io.Serializable
 import java.math.BigDecimal
 import java.time.Duration
@@ -47,25 +49,26 @@ data class DebtInfo internal constructor(
             period: Duration
         ) = DebtInfo(sum, lenderId, debtorId, dateTime, period)
 
-        val debtInfoRegex = Regex(
-            "DebtInfo\\{sum=([+-]?(?:[0-9]*[.])?[0-9]+), lenderId=(\\w+), debtorId=(\\w+), dateTime=(\\d+), payPeriod=(\\d+)\\}"
-        )
 
         @JvmStatic
         @JvmName("of")
         fun of(string: String): DebtInfo {
-            val matcher = debtInfoRegex.find(string)
-            return if (matcher != null) {
-                val values = matcher.groupValues
-                of(
-                    BigDecimal(values[1]),
-                    PersonId(values[2]),
-                    PersonId(values[3]),
-                    LocalDateTime.ofEpochSecond(values[4].toLong(), 0, ZoneOffset.UTC),
-                    Duration.ofDays(values[5].toLong())
-                )
-            } else
-                throw IllegalArgumentException("Cannot make DebtInfo of string $string")
+            val json = JsonParser.parseString(string).asJsonObject
+            return of(json)
+        }
+
+        fun of(json: JsonObject): DebtInfo {
+            return of(
+                json.getAsJsonPrimitive("sum").asString.toBigDecimal(),
+                json.getAsJsonPrimitive("lenderId").asString.toPersonId(),
+                json.getAsJsonPrimitive("debtorId").asString.toPersonId(),
+                LocalDateTime.ofEpochSecond(
+                    json.getAsJsonPrimitive("dateTime").asLong,
+                    0,
+                    ZoneOffset.UTC
+                ),
+                Duration.ofDays(json.getAsJsonPrimitive("payPeriod").asLong)
+            )
         }
     }
 }

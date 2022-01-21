@@ -59,4 +59,7 @@
     <string name="debt">Долг</string>
     <string name="no_auth">Не смогли залогинить вас. Перезапустите приложение и попробуйте снова</string>
     <string name="payment_added">Был добавлен платёж</string>
+    <string name="debt_sent_agreement">Долг был одобрен</string>
+    <string name="payment_error">Не смогли создать платёж</string>
+    <string name="payment_more_left">Нельзя заплатить больше, чем вы должны: %s</string>
 </resources>

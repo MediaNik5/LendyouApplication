@@ -28,7 +28,7 @@ import org.medianik.lendyou.ui.theme.LendyouTheme
 const val MaxCircleSize = 100f
 
 @Composable
-fun PendingDebts() {
+fun PendingDebts(navigateBack: () -> Unit) {
     var changes by remember { mutableStateOf(0) }
     val onChange: () -> Unit = { changes++ }
     Repos.getInstance().subscribeToChanges(onChange)
@@ -44,10 +44,20 @@ fun PendingDebts() {
             PendingDebts(
                 pendingDebts,
                 onAccept = {
-                    Repos.getInstance().createDebt(it, Account("NO"), Account("NO"))
+                    if (pendingDebts.size == 1) {
+                        Repos.getInstance().createDebt(it, Account("NO"), Account("NO"))
+                        navigateBack()
+                    } else {
+                        Repos.getInstance().createDebt(it, Account("NO"), Account("NO"))
+                    }
                 },
                 onDecline = {
-                    Repos.getInstance().declineDebtAsDebtor(it)
+                    if (pendingDebts.size == 1) {
+                        Repos.getInstance().declineDebtFromServer(it)
+                        navigateBack()
+                    } else {
+                        Repos.getInstance().declineDebtFromServer(it)
+                    }
                 }
             )
         }

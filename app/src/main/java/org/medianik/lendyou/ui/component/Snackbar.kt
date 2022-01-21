@@ -11,11 +11,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.medianik.lendyou.ui.theme.LendyouTheme
 
-
-/**
- * An alternative to [androidx.compose.material.Snackbar] utilizing
- * [com.example.jetsnack.ui.theme.JetsnackColors]
- */
 @Composable
 fun LendyouSnackbar(
     snackbarData: SnackbarData,

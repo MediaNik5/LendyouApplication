@@ -66,6 +66,8 @@ public class MessagingService extends FirebaseMessagingService {
         }
 
         public void onReceive() {
+            if (type == null)
+                return;
             type.onReceive(contents);
         }
 
@@ -102,9 +104,9 @@ public class MessagingService extends FirebaseMessagingService {
         public enum Type {
             Noop((__) -> {
             }),
-            NewDebt(debt -> Repos.getInstance().addDebtAsDebtor(Debt.of(debt))),
-            NewDebtRequest(debtInfo -> Repos.getInstance().addPendingDebt(DebtInfo.of(debtInfo))),
-            DeclineDebt(debtInfo -> Repos.getInstance().declineDebtAsDebtor(DebtInfo.of(debtInfo))),
+            NewDebt(debt -> Repos.getInstance().addDebtFromServer(Debt.of(debt))),
+            NewDebtRequest(debtInfo -> Repos.getInstance().addPendingDebtFromServer(DebtInfo.of(debtInfo))),
+            DeclineDebt(debtInfo -> Repos.getInstance().declineDebtFromServer(DebtInfo.of(debtInfo))),
             NewPerson(person -> Repos.getInstance().addPerson(Person.of(person))),
             NewPayment(payment -> Repos.getInstance().addPaymentFromServer(Payment.of(payment)));
 

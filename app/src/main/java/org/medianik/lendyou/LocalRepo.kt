@@ -3,7 +3,6 @@ package org.medianik.lendyou
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import org.medianik.lendyou.model.Repo
-import org.medianik.lendyou.model.SnackbarManager
 import org.medianik.lendyou.model.SnackbarManager.showMessage
 import org.medianik.lendyou.model.bank.Account
 import org.medianik.lendyou.model.bank.Payment
@@ -19,7 +18,6 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.ThreadLocalRandom
 
 
 /**
@@ -44,11 +42,6 @@ class LocalRepo(
         ConcurrentHashMap<DebtId, Debt>().also {
             database.allDebts().forEach { debt ->
                 it.addDebt(debt)
-                if (debt.left != BigDecimal.ZERO && ThreadLocalRandom.current().nextBoolean()) {
-                    debt.addPayment(
-                        ThreadLocalRandom.current().nextInt(debt.leftDouble.toInt()).toBigDecimal()
-                    )
-                }
             }
         }
     }
@@ -122,14 +115,15 @@ class LocalRepo(
         to: Account
     ): Debt {
         if (isLender) {
-            return createDebtAsLender(debtInfo, from, to).also { subscribers.update() }
+            return createDebtAsLender(debtInfo, from, to)
         }
         throw IllegalArgumentException("You have to be lender to create debts")
     }
 
-    override fun addDebtAsDebtor(debt: Debt): Boolean {
+    override fun addDebtFromServer(debt: Debt): Boolean {
         if (debts.addDebt(debt)) {
             database.addDebt(debt)
+            pendingDebts.remove(debt.debtInfo)
             subscribers.update()
             return true
         }
@@ -139,12 +133,9 @@ class LocalRepo(
     override fun declineDebtAsLender(debtInfo: DebtInfo) {
         if (isLender) {
             serverDatabase.declineDebt(debtInfo).addOnSuccessListener { it: Void? ->
-                database.removePendingDebt(debtInfo)
-                pendingDebts.remove(debtInfo)
-                subscribers.update()
-                SnackbarManager.showMessage(R.string.pending_debt_declined)
+                showMessage(R.string.pending_debt_declined)
             }.addOnFailureListener { exception ->
-                SnackbarManager.showMessage(R.string.pending_debt_not_declined)
+                showMessage(R.string.pending_debt_not_declined)
                 Log.e(
                     "Lendyou",
                     "Exception happened while updating database(declining debt)",
@@ -156,10 +147,11 @@ class LocalRepo(
         throw IllegalStateException("Cannot delete pending debt as debtor")
     }
 
-    override fun declineDebtAsDebtor(debtInfo: DebtInfo) {
+    override fun declineDebtFromServer(debtInfo: DebtInfo) {
         if (pendingDebts.remove(debtInfo)) {
+            database.removePendingDebt(debtInfo)
             subscribers.update()
-            SnackbarManager.showMessage(R.string.pending_debt_declined)
+            showMessage(R.string.pending_debt_declined)
         }
     }
 
@@ -179,13 +171,9 @@ class LocalRepo(
             to,
         )
         serverDatabase.addDebt(newDebt).addOnSuccessListener { it: Void? ->
-            debts[newDebt.id] = newDebt
-            database.addDebt(newDebt)
-            pendingDebts.remove(debtInfo)
-            subscribers.update()
-            SnackbarManager.showMessage(R.string.debt_created)
+            showMessage(R.string.debt_sent_agreement)
         }.addOnFailureListener { exception ->
-            SnackbarManager.showMessage(R.string.debt_not_created)
+            showMessage(R.string.debt_not_created)
             Log.e("Lendyou", "Exception happened while updating database(creating debt)", exception)
         }
         return newDebt
@@ -218,7 +206,7 @@ class LocalRepo(
         TODO("Not yet implemented")
     }
 
-    override fun addPendingDebt(debtInfo: DebtInfo) {
+    override fun addPendingDebtFromServer(debtInfo: DebtInfo) {
         if (!pendingDebts.contains(debtInfo)) {
             pendingDebts.add(debtInfo)
             database.addPendingDebt(debtInfo)
@@ -256,22 +244,32 @@ class LocalRepo(
 
     override fun askForDebt(debtInfo: DebtInfo) {
         serverDatabase.askForDebt(debtInfo).addOnSuccessListener { it: Void? ->
-            SnackbarManager.showMessage(R.string.request_debt_success_to_server)
-            subscribers.update()
+            showMessage(R.string.request_debt_success_to_server)
         }.addOnFailureListener { exception ->
-            SnackbarManager.showMessage(R.string.request_debt_failure_to_server)
+            showMessage(R.string.request_debt_failure_to_server)
             Log.e("Lendyou", "Exception happened while updating database", exception)
         }
     }
 
     override fun addPayment(payment: Payment) {
         serverDatabase.addPayment(payment)
+            .addOnSuccessListener {
+                showMessage(R.string.payment_added)
+            }.addOnFailureListener { exception ->
+                showMessage(R.string.payment_error)
+                Log.e(
+                    "Lendyou",
+                    "Exception happened while updating database(adding payment)",
+                    exception
+                )
+            }
     }
 
     override fun addPaymentFromServer(payment: Payment): Boolean {
         val added = debts[DebtId(payment.debtId)]!!.addPayment(payment)
         if (added) {
             database.addPayment(payment)
+            subscribers.update()
             showMessage(R.string.payment_added)
         }
         return added

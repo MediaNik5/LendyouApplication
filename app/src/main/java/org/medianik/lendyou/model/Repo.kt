@@ -43,10 +43,10 @@ interface Repo {
         to: Account,
     ): Debt
 
-    fun addDebtAsDebtor(debt: Debt): Boolean
+    fun addDebtFromServer(debt: Debt): Boolean
 
     fun declineDebtAsLender(debtInfo: DebtInfo)
-    fun declineDebtAsDebtor(debtInfo: DebtInfo)
+    fun declineDebtFromServer(debtInfo: DebtInfo)
 
     fun payDebt(debt: Debt, sum: BigDecimal = debt.debtInfo.sum): Boolean
 
@@ -63,7 +63,7 @@ interface Repo {
 //    fun getPendingOperations(): Collection<Operation<*>>
 //    fun getCompletedOperations(): Collection<Operation<*>>
 
-    fun addPendingDebt(debtInfo: DebtInfo)
+    fun addPendingDebtFromServer(debtInfo: DebtInfo)
     fun getPendingDebts(sortingOrder: SortingOrder? = null): List<DebtInfo>
 
     fun getLender(lenderId: PersonId): Lender
